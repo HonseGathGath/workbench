@@ -1,32 +1,41 @@
 # Workbench
 
-A minimal personal engineering blog. Posts are Markdown files with front
-matter in `/posts` — no database, no CMS, no auth. `go run .` is a small
-CLI with three subcommands.
+A minimal personal blog with a real admin: public pages are served from
+Markdown-ish posts stored in SQLite, and everything (write/edit/delete,
+draft vs. published) happens through a logged-in `/admin` UI in the
+browser — no editor or terminal needed once it's running.
 
-## Write
+## Run it locally
 
-    go run . new "Post Title"
+    go run . hash-password "pick a password"
 
-Scaffolds `/posts/post-title.md` with today's date already filled in.
-Footnotes (`[^1]` ... `[^1]: text`) render as Tufte-style sidenotes.
+Copy the printed hash, then:
 
-## Preview locally
+    ADMIN_PASSWORD_HASH='<paste the hash>' make dev
 
-    make dev
+Visit http://localhost:8080 for the public site, http://localhost:8080/admin
+to write. Username defaults to `admin` (override with `ADMIN_USERNAME`).
+Posts live in `workbench.db` (SQLite, gitignored) next to the binary.
 
-Builds the site into `./public` and serves it on http://localhost:8080.
-Rerun after editing a post.
+Env vars `serve` reads: `PORT` (default 8080), `DB_PATH` (default
+`workbench.db`), `ADMIN_USERNAME` (default `admin`), `ADMIN_PASSWORD_HASH`
+(required).
 
-## Publish
+## Deploy (Railway)
 
-    git push
+A plain Go binary with a SQLite file needs a host that runs your code
+continuously and keeps a writable disk around — Railway does both without
+asking for a Dockerfile.
 
-Once GitHub Pages is set up (one-time): in the repo's Settings → Pages,
-set Source to "GitHub Actions". `.github/workflows/deploy.yml` builds and
-deploys on every push to `main`. For a fully correct RSS feed, put your
-Pages URL (e.g. `https://you.github.io/repo`) as a single line in
-`site.url` at the repo root.
+1. Push this repo to GitHub.
+2. On railway.app: New Project → Deploy from GitHub repo → pick it.
+   Railway detects `go.mod` and builds/runs the binary automatically.
+3. In the service's Variables tab, set `ADMIN_PASSWORD_HASH` (from
+   `go run . hash-password "..."`) and optionally `ADMIN_USERNAME`.
+4. In the service's Settings → Volumes, attach a volume mounted at
+   `/data`, and set the `DB_PATH` variable to `/data/workbench.db`.
+   Without this, the database resets on every redeploy.
+5. Settings → Networking → Generate Domain. That URL is your live blog.
 
 ## Comments (giscus)
 

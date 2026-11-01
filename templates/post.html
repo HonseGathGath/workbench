@@ -1,15 +1,15 @@
 {{define "post.html"}}
 {{template "header" .}}
 <article class="post">
-  <p class="meta">{{.Post.DateDisplay}} &middot; {{.Post.ReadingMinutes}} min read{{if .Post.Tags}} &middot; {{range $i, $t := .Post.Tags}}{{if $i}}, {{end}}<a href="{{$.Root}}?tag={{$t}}">{{$t}}</a>{{end}}{{end}}</p>
+  <p class="meta">{{.Post.DateDisplay}} &middot; {{.Post.ReadingMinutes}} min read{{if .Post.Tags}} &middot; {{range $i, $t := .Post.Tags}}{{if $i}}, {{end}}<a href="/?tag={{$t}}">{{$t}}</a>{{end}}{{end}}</p>
   <h1>{{.Post.Title}}</h1>
   <div class="post-body">
-    {{.Post.Body}}
+    {{.Body}}
   </div>
 </article>
 <nav class="post-nav">
-  {{if .Prev}}<a class="post-nav-link prev" href="../{{.Prev.Slug}}/">&larr; {{.Prev.Title}}</a>{{else}}<span></span>{{end}}
-  {{if .Next}}<a class="post-nav-link next" href="../{{.Next.Slug}}/">{{.Next.Title}} &rarr;</a>{{end}}
+  {{if .Prev}}<a class="post-nav-link prev" href="/posts/{{.Prev.Slug}}">&larr; {{.Prev.Title}}</a>{{else}}<span></span>{{end}}
+  {{if .Next}}<a class="post-nav-link next" href="/posts/{{.Next.Slug}}">{{.Next.Title}} &rarr;</a>{{end}}
 </nav>
 <section class="comments">
   <script src="https://giscus.app/client.js"

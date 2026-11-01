@@ -1,230 +1,186 @@
 package main
 
 import (
-	"bytes"
+	"database/sql"
 	"fmt"
 	"html/template"
-	"os"
-	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
 	"time"
-
-	"github.com/yuin/goldmark"
-	gast "github.com/yuin/goldmark/ast"
-	"github.com/yuin/goldmark/extension"
-	extast "github.com/yuin/goldmark/extension/ast"
-	"github.com/yuin/goldmark/renderer"
-	"github.com/yuin/goldmark/text"
-	"github.com/yuin/goldmark/util"
 )
 
 type Post struct {
-	Slug           string
-	Title          string
-	Date           time.Time
-	Tags           []string
-	Body           template.HTML
-	Excerpt        string
-	PlainText      string
-	ReadingMinutes int
+	ID        int64
+	Slug      string
+	Title     string
+	Body      string
+	Tags      []string
+	Published bool
+	PostDate  time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
-func (p Post) DateDisplay() string { return p.Date.Format("Jan 2, 2006") }
+func (p Post) DateDisplay() string            { return p.PostDate.Format("Jan 2, 2006") }
+func (p Post) PostDateValue() string          { return p.PostDate.Format("2006-01-02") }
+func (p Post) TagsJoined() string             { return strings.Join(p.Tags, ", ") }
+func (p Post) Excerpt() string                { return excerpt(p.Body) }
+func (p Post) ReadingMinutes() int            { return readingMinutes(plainText(p.Body)) }
+func (p Post) Render() (template.HTML, error) { return renderMarkdown(p.Body) }
 
-// LoadPosts reads every *.md file in dir, parses its front matter and
-// Markdown body, and returns them sorted newest first.
-func LoadPosts(dir string) ([]Post, error) {
-	files, err := filepath.Glob(filepath.Join(dir, "*.md"))
-	if err != nil {
-		return nil, err
-	}
+const timeLayout = "2006-01-02 15:04:05"
 
-	posts := make([]Post, 0, len(files))
-	for _, f := range files {
-		raw, err := os.ReadFile(f)
-		if err != nil {
-			return nil, err
-		}
-		post, err := parsePost(raw)
-		if err != nil {
-			return nil, fmt.Errorf("%s: %w", f, err)
-		}
-		post.Slug = strings.TrimSuffix(filepath.Base(f), ".md")
-		posts = append(posts, post)
-	}
-
-	sort.Slice(posts, func(i, j int) bool { return posts[i].Date.After(posts[j].Date) })
-	return posts, nil
-}
-
-var frontMatterRe = regexp.MustCompile(`(?s)^---\n(.*?)\n---\n(.*)$`)
-
-func parsePost(raw []byte) (Post, error) {
-	m := frontMatterRe.FindSubmatch(raw)
-	if m == nil {
-		return Post{}, fmt.Errorf("missing --- front matter block")
-	}
+func scanPost(row scanner) (Post, error) {
 	var p Post
-	for _, line := range strings.Split(string(m[1]), "\n") {
-		key, val, ok := strings.Cut(line, ":")
-		if !ok {
-			continue
-		}
-		val = strings.TrimSpace(val)
-		switch strings.TrimSpace(key) {
-		case "title":
-			p.Title = strings.Trim(val, `"`)
-		case "date":
-			d, err := time.Parse("2006-01-02", val)
-			if err != nil {
-				return p, fmt.Errorf("bad date %q: %w", val, err)
-			}
-			p.Date = d
-		case "tags":
-			val = strings.Trim(val, "[]")
-			for _, t := range strings.Split(val, ",") {
-				t = strings.TrimSpace(strings.Trim(t, `"`))
-				if t != "" {
-					p.Tags = append(p.Tags, t)
-				}
-			}
-		}
-	}
-
-	body := strings.TrimSpace(string(m[2]))
-	p.Excerpt = excerpt(body)
-	p.PlainText = plainText(body)
-	p.ReadingMinutes = readingMinutes(p.PlainText)
-
-	html, err := renderMarkdown(body)
+	var tagsRaw, postDate, createdAt, updatedAt string
+	var published int
+	err := row.Scan(&p.ID, &p.Slug, &p.Title, &p.Body, &tagsRaw, &published, &postDate, &createdAt, &updatedAt)
 	if err != nil {
-		return p, err
+		return Post{}, err
 	}
-	p.Body = html
+	p.Tags = parseTags(tagsRaw)
+	p.Published = published != 0
+	p.PostDate, _ = time.Parse("2006-01-02", postDate)
+	p.CreatedAt, _ = time.Parse(timeLayout, createdAt)
+	p.UpdatedAt, _ = time.Parse(timeLayout, updatedAt)
 	return p, nil
 }
 
-// renderMarkdown converts Markdown to HTML, rewriting footnote references
-// (`[^1]`) into Tufte-style sidenotes: the note is inlined right where it's
-// referenced, with CSS floating it into the margin on wide screens and a
-// checkbox/label toggle revealing it inline on narrow ones.
-func renderMarkdown(body string) (template.HTML, error) {
-	md := goldmark.New(goldmark.WithExtensions(extension.Footnote))
+// scanner is satisfied by both *sql.Row and *sql.Rows.
+type scanner interface {
+	Scan(dest ...any) error
+}
 
-	doc := md.Parser().Parse(text.NewReader([]byte(body)))
+const postColumns = "id, slug, title, body, tags, published, post_date, created_at, updated_at"
 
-	// Render footnote fragments with a throwaway renderer: md.Renderer()
-	// must not render anything before the sidenote renderer is registered
-	// below, since AddOptions is a no-op after a renderer's first Render.
-	fragmentRenderer := goldmark.New().Renderer()
+func ListPublished(db *sql.DB) ([]Post, error) {
+	return queryPosts(db, "SELECT "+postColumns+" FROM posts WHERE published = 1 ORDER BY post_date DESC, id DESC")
+}
 
-	footnotes := map[int]string{}
-	if last := doc.LastChild(); last != nil && last.Kind() == extast.KindFootnoteList {
-		for fn := last.FirstChild(); fn != nil; fn = fn.NextSibling() {
-			f, ok := fn.(*extast.Footnote)
-			if !ok {
-				continue
-			}
-			stripFootnoteBacklinks(f)
-			var buf bytes.Buffer
-			for c := f.FirstChild(); c != nil; c = c.NextSibling() {
-				if err := fragmentRenderer.Render(&buf, []byte(body), c); err != nil {
-					return "", err
-				}
-			}
-			footnotes[f.Index] = buf.String()
-		}
-		doc.RemoveChild(doc, last)
+func ListAll(db *sql.DB) ([]Post, error) {
+	return queryPosts(db, "SELECT "+postColumns+" FROM posts ORDER BY post_date DESC, id DESC")
+}
+
+func queryPosts(db *sql.DB, query string, args ...any) ([]Post, error) {
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, err
 	}
+	defer rows.Close()
 
-	md.Renderer().AddOptions(renderer.WithNodeRenderers(
-		util.Prioritized(&sidenoteRenderer{footnotes: footnotes}, 0),
-	))
+	var posts []Post
+	for rows.Next() {
+		p, err := scanPost(rows)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, p)
+	}
+	return posts, rows.Err()
+}
 
-	var buf bytes.Buffer
-	if err := md.Renderer().Render(&buf, []byte(body), doc); err != nil {
+// GetPost returns sql.ErrNoRows if the slug doesn't exist. onlyPublished
+// restricts it to published posts, so a public post URL can never surface
+// a draft just because the slug was guessed.
+func GetPost(db *sql.DB, slug string, onlyPublished bool) (Post, error) {
+	query := "SELECT " + postColumns + " FROM posts WHERE slug = ?"
+	if onlyPublished {
+		query += " AND published = 1"
+	}
+	return scanPost(db.QueryRow(query, slug))
+}
+
+func CreatePost(db *sql.DB, title, body, tagsRaw string, published bool, postDate time.Time) (string, error) {
+	slug, err := uniqueSlug(db, title)
+	if err != nil {
 		return "", err
 	}
-	return template.HTML(buf.String()), nil
+	now := time.Now().UTC().Format(timeLayout)
+	_, err = db.Exec(
+		`INSERT INTO posts (slug, title, body, tags, published, post_date, created_at, updated_at)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		slug, title, body, normalizeTags(tagsRaw), boolToInt(published), postDate.Format("2006-01-02"), now, now,
+	)
+	return slug, err
 }
 
-// stripFootnoteBacklinks removes the "↩" return-link nodes goldmark appends
-// to a footnote's content; sidenotes don't need them since the note is
-// already sitting next to its reference.
-func stripFootnoteBacklinks(f *extast.Footnote) {
-	var container gast.Node = f
-	if fc := container.LastChild(); fc != nil && gast.IsParagraph(fc) {
-		container = fc
+// UpdatePost deliberately never changes the slug: it's the post's public
+// URL, and giscus maps comment threads to it by pathname.
+func UpdatePost(db *sql.DB, slug, title, body, tagsRaw string, published bool, postDate time.Time) error {
+	now := time.Now().UTC().Format(timeLayout)
+	_, err := db.Exec(
+		`UPDATE posts SET title = ?, body = ?, tags = ?, published = ?, post_date = ?, updated_at = ?
+		 WHERE slug = ?`,
+		title, body, normalizeTags(tagsRaw), boolToInt(published), postDate.Format("2006-01-02"), now, slug,
+	)
+	return err
+}
+
+func DeletePost(db *sql.DB, slug string) error {
+	_, err := db.Exec("DELETE FROM posts WHERE slug = ?", slug)
+	return err
+}
+
+func boolToInt(b bool) int {
+	if b {
+		return 1
 	}
-	var next gast.Node
-	for c := container.FirstChild(); c != nil; c = next {
-		next = c.NextSibling()
-		if c.Kind() == extast.KindFootnoteBacklink {
-			container.RemoveChild(container, c)
+	return 0
+}
+
+func parseTags(raw string) []string {
+	var tags []string
+	for _, t := range strings.Split(raw, ",") {
+		t = strings.TrimSpace(t)
+		if t != "" {
+			tags = append(tags, t)
 		}
 	}
+	return tags
 }
 
-type sidenoteRenderer struct {
-	footnotes map[int]string
+func normalizeTags(raw string) string {
+	return strings.Join(parseTags(raw), ", ")
 }
 
-func (s *sidenoteRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
-	reg.Register(extast.KindFootnoteLink, s.renderFootnoteLink)
+var slugNonWord = regexp.MustCompile(`[^a-z0-9]+`)
+
+func slugify(title string) string {
+	s := slugNonWord.ReplaceAllString(strings.ToLower(title), "-")
+	return strings.Trim(s, "-")
 }
 
-func (s *sidenoteRenderer) renderFootnoteLink(w util.BufWriter, source []byte, n gast.Node, entering bool) (gast.WalkStatus, error) {
-	if !entering {
-		return gast.WalkContinue, nil
+// uniqueSlug slugifies the title and appends -2, -3, ... on collision.
+func uniqueSlug(db *sql.DB, title string) (string, error) {
+	base := slugify(title)
+	if base == "" {
+		return "", fmt.Errorf("title %q doesn't produce a usable slug", title)
 	}
-	link := n.(*extast.FootnoteLink)
-	id := fmt.Sprintf("sn-%d-%d", link.Index, link.RefIndex)
-	fmt.Fprintf(w, `<label for="%s" class="margin-toggle sidenote-number">%d</label>`, id, link.Index)
-	fmt.Fprintf(w, `<input type="checkbox" id="%s" class="margin-toggle">`, id)
-	fmt.Fprintf(w, `<span class="sidenote">%s</span>`, s.footnotes[link.Index])
-	return gast.WalkContinue, nil
-}
-
-// excerpt grabs the first paragraph of raw Markdown and strips the most
-// common inline syntax so it reads as plain text on the index page.
-func excerpt(body string) string {
-	first := strings.TrimSpace(strings.SplitN(body, "\n\n", 2)[0])
-	first = stripMarkdown(first)
-	const max = 220
-	if len(first) > max {
-		first = strings.TrimSpace(first[:max]) + "…"
+	slug := base
+	for n := 2; ; n++ {
+		var exists int
+		if err := db.QueryRow("SELECT COUNT(*) FROM posts WHERE slug = ?", slug).Scan(&exists); err != nil {
+			return "", err
+		}
+		if exists == 0 {
+			return slug, nil
+		}
+		slug = fmt.Sprintf("%s-%d", base, n)
 	}
-	return first
 }
 
-// plainText strips Markdown syntax from the whole post body, for reading
-// time estimation and the search index.
-func plainText(body string) string {
-	return stripMarkdown(body)
-}
-
-var (
-	headingRe  = regexp.MustCompile(`(?m)^#+\s*`)
-	mdLinkRe   = regexp.MustCompile(`\[([^\]]*)\]\([^)]*\)`)
-	footnoteRe = regexp.MustCompile(`\[\^[^\]]*\](?::[^\n]*)?`)
-	emphasisRe = regexp.MustCompile("[*_`#>]")
-)
-
-func stripMarkdown(s string) string {
-	s = headingRe.ReplaceAllString(s, "")
-	s = mdLinkRe.ReplaceAllString(s, "$1")
-	s = footnoteRe.ReplaceAllString(s, "")
-	s = emphasisRe.ReplaceAllString(s, "")
-	return strings.Join(strings.Fields(s), " ")
-}
-
-func readingMinutes(plain string) int {
-	words := len(strings.Fields(plain))
-	minutes := words / 200
-	if minutes < 1 {
-		minutes = 1
+func sortedTags(posts []Post) []string {
+	seen := map[string]bool{}
+	var tags []string
+	for _, p := range posts {
+		for _, t := range p.Tags {
+			if !seen[t] {
+				seen[t] = true
+				tags = append(tags, t)
+			}
+		}
 	}
-	return minutes
+	sort.Strings(tags)
+	return tags
 }

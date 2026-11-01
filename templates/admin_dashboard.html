@@ -1,0 +1,50 @@
+{{define "admin_dashboard.html"}}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin · Workbench</title>
+<link rel="stylesheet" href="/static/admin.css">
+</head>
+<body class="admin">
+<div class="admin-box">
+  <div class="admin-topbar">
+    <h1>Workbench admin</h1>
+    <div class="admin-topbar-links">
+      <a href="/">View site</a>
+      <a href="/admin/posts/new">New post</a>
+      <form method="post" action="/admin/logout" class="admin-inline-form">
+        <button type="submit" class="admin-link-button">Log out</button>
+      </form>
+    </div>
+  </div>
+
+  {{if .Message}}<p class="admin-flash">{{.Message}}</p>{{end}}
+
+  <table class="admin-table">
+    <thead>
+      <tr><th>Title</th><th>Date</th><th>Tags</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      {{range .Posts}}
+      <tr>
+        <td><a href="/admin/posts/{{.Slug}}/edit">{{.Title}}</a></td>
+        <td>{{.DateDisplay}}</td>
+        <td>{{.TagsJoined}}</td>
+        <td>{{if .Published}}<span class="admin-badge admin-badge-published">published</span>{{else}}<span class="admin-badge admin-badge-draft">draft</span>{{end}}</td>
+        <td class="admin-row-actions">
+          <a href="/admin/posts/{{.Slug}}/edit">Edit</a>
+          <form method="post" action="/admin/posts/{{.Slug}}/delete" class="admin-inline-form" onsubmit="return confirm('Delete “{{.Title}}”? This can\'t be undone.');">
+            <button type="submit" class="admin-link-button admin-link-danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {{else}}
+      <tr><td colspan="5">No posts yet.</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+</body>
+</html>
+{{end}}

@@ -39,7 +39,7 @@
 
   // Full post text isn't in the DOM (only the excerpt is), so pull it
   // from the generated index for free-text search once it's available.
-  fetch("search-index.json")
+  fetch("/search-index.json")
     .then(function (r) { return r.json(); })
     .then(function (entries) {
       textIndex = {};

@@ -4,7 +4,7 @@
   <input type="search" id="search-input" placeholder="Search posts…" aria-label="Search posts">
   {{if .Tags}}
   <div class="tag-cloud" id="tag-cloud">
-    <a href="." class="tag-chip" data-tag="">All</a>
+    <a href="/" class="tag-chip" data-tag="">All</a>
     {{range .Tags}}<a href="?tag={{.}}" class="tag-chip" data-tag="{{.}}">{{.}}</a>{{end}}
   </div>
   {{end}}
@@ -12,7 +12,7 @@
 <section class="post-list" id="post-list">
   {{range .Posts}}
   <article class="post-summary" data-slug="{{.Slug}}" data-tags="{{join .Tags ","}}">
-    <a class="post-summary-link" href="posts/{{.Slug}}/">
+    <a class="post-summary-link" href="/posts/{{.Slug}}">
       <p class="meta">{{.DateDisplay}} &middot; {{.ReadingMinutes}} min{{if .Tags}} &middot; {{range $i, $t := .Tags}}{{if $i}}, {{end}}{{$t}}{{end}}{{end}}</p>
       <h2>{{.Title}}</h2>
       <p class="excerpt">{{.Excerpt}}</p>

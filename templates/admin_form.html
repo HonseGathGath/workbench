@@ -1,0 +1,36 @@
+{{define "admin_form.html"}}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{if .IsEdit}}Edit post{{else}}New post{{end}} · Workbench</title>
+<link rel="stylesheet" href="/static/admin.css">
+</head>
+<body class="admin">
+<div class="admin-box">
+  <div class="admin-topbar">
+    <h1>{{if .IsEdit}}Edit post{{else}}New post{{end}}</h1>
+    <div class="admin-topbar-links">
+      <a href="/admin">Back to admin</a>
+    </div>
+  </div>
+
+  {{if .Error}}<p class="admin-error">{{.Error}}</p>{{end}}
+
+  <form method="post" action="{{if .IsEdit}}/admin/posts/{{.Post.Slug}}/edit{{else}}/admin/posts/new{{end}}" class="admin-post-form">
+    <label>Title<input type="text" name="title" value="{{.Post.Title}}" required autofocus></label>
+    <label>Tags (comma-separated)<input type="text" name="tags" value="{{.Post.TagsJoined}}"></label>
+    <label>Date<input type="date" name="post_date" value="{{.Post.PostDateValue}}"></label>
+    <label>Body (Markdown — footnotes like <code>[^1]</code> become sidenotes)
+      <textarea name="body" rows="22" required>{{.Post.Body}}</textarea>
+    </label>
+    <label class="admin-checkbox-label">
+      <input type="checkbox" name="published" {{if .Post.Published}}checked{{end}}>
+      Published (unchecked = draft, hidden from the public site)
+    </label>
+    <button type="submit">{{if .IsEdit}}Save changes{{else}}Create post{{end}}</button>
+  </form>
+</div>
+</body>
+</html>
+{{end}}

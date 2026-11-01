@@ -304,7 +304,11 @@ input.margin-toggle {
   margin: 0;
 }
 
-@media (max-width: 1100px) {
+/* Below this, the right-hand gutter (viewport/2 - 320px, given the
+   640px column and 300px sidenote throw) can't fit a floated sidenote
+   without it running off the viewport edge, so fall back to an inline
+   toggle. */
+@media (max-width: 1300px) {
   .sidenote {
     display: none;
     float: none;

@@ -6,7 +6,7 @@
 <title>{{if .PageTitle}}{{.PageTitle}} · {{end}}Workbench</title>
 <link rel="alternate" type="application/rss+xml" title="Workbench" href="/feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/style.css">
 <script>
 (function () {
@@ -17,26 +17,20 @@
 </script>
 </head>
 <body>
-<header class="site-header">
-  <div class="header-row">
-    <div>
-      <a class="site-title" href="/">Workbench</a>
-      <p class="byline">Ghaith Lassoued</p>
-    </div>
-    <div class="header-controls">
-      {{if .IsAdmin}}
-      <nav class="admin-nav">
-        <a href="/admin">Dashboard</a>
-        <a href="/admin/posts/new">+ New post</a>
-        <form method="post" action="/admin/logout" class="inline-form">
-          <button type="submit" class="link-button">Log out</button>
-        </form>
-      </nav>
-      {{end}}
-      <button id="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">◐</button>
-    </div>
+<header class="topbar">
+  <a class="topbar-brand" href="/">Workbench</a>
+  <div class="topbar-controls">
+    {{if .IsAdmin}}
+    <nav class="admin-nav">
+      <a href="/admin">Dashboard</a>
+      <a href="/admin/posts/new">New post</a>
+      <form method="post" action="/admin/logout" class="inline-form">
+        <button type="submit" class="link-button">Log out</button>
+      </form>
+    </nav>
+    {{end}}
+    <button id="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">◐</button>
   </div>
-  <p class="site-desc">notes on an FPGA SmartNIC security/performance project.</p>
 </header>
 <main>
 {{end}}

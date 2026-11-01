@@ -1,35 +1,30 @@
 {{define "admin_dashboard.html"}}
 {{template "header" .}}
-<section class="page-header-row">
-  <h1 class="page-heading">All posts</h1>
-  <a href="/admin/posts/new" class="button-link">+ New post</a>
+<section class="masthead">
+  <p class="eyebrow">Admin</p>
+  <h1 class="headline headline-compact">All posts</h1>
+  <a href="/admin/posts/new" class="text-button">+ New post</a>
 </section>
 
 {{if .Message}}<p class="flash flash-ok">{{.Message}}</p>{{end}}
 
-<table class="post-table">
-  <thead>
-    <tr><th>Title</th><th>Date</th><th>Tags</th><th>Status</th><th></th></tr>
-  </thead>
-  <tbody>
-    {{range .Posts}}
-    <tr>
-      <td><a href="/admin/posts/{{.Slug}}/edit">{{.Title}}</a></td>
-      <td class="meta-cell">{{.DateDisplay}}</td>
-      <td class="meta-cell">{{.TagsJoined}}</td>
-      <td>{{if .Published}}<span class="badge badge-published">published</span>{{else}}<span class="badge badge-draft">draft</span>{{end}}</td>
-      <td class="row-actions">
-        <a href="/posts/{{.Slug}}">View</a>
-        <a href="/admin/posts/{{.Slug}}/edit">Edit</a>
-        <form method="post" action="/admin/posts/{{.Slug}}/delete" class="inline-form" onsubmit="return confirm('Delete “{{.Title}}”? This can\'t be undone.');">
-          <button type="submit" class="link-button link-danger">Delete</button>
-        </form>
-      </td>
-    </tr>
-    {{else}}
-    <tr><td colspan="5">No posts yet — <a href="/admin/posts/new">write the first one</a>.</td></tr>
-    {{end}}
-  </tbody>
-</table>
+<section class="entry-list">
+  {{range .Posts}}
+  <article class="entry">
+    <span class="entry-number"></span>
+    <h2 class="entry-heading"><a href="/admin/posts/{{.Slug}}/edit">{{.Title}}</a></h2>
+    <p class="meta">{{.DateDisplay}}{{if .Tags}} &middot; {{.TagsJoined}}{{end}} &middot; {{if .Published}}<span class="status">published</span>{{else}}<span class="status status-draft">draft</span>{{end}}</p>
+    <p class="entry-actions">
+      <a href="/posts/{{.Slug}}">View</a> &middot;
+      <a href="/admin/posts/{{.Slug}}/edit">Edit</a> &middot;
+      <form method="post" action="/admin/posts/{{.Slug}}/delete" class="inline-form" onsubmit="return confirm('Delete “{{.Title}}”? This can\'t be undone.');">
+        <button type="submit" class="link-button link-danger">Delete</button>
+      </form>
+    </p>
+  </article>
+  {{else}}
+  <p class="entry-empty">No posts yet — <a href="/admin/posts/new">write the first one</a>.</p>
+  {{end}}
+</section>
 {{template "footer" .}}
 {{end}}

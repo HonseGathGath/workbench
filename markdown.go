@@ -39,9 +39,20 @@ func renderMarkdown(body string) (template.HTML, error) {
 			}
 			stripFootnoteBacklinks(f)
 			var buf bytes.Buffer
+			// Render each block's inline children directly, skipping the
+			// block wrapper itself (e.g. a Paragraph's <p>...</p>): this
+			// fragment gets spliced into the *middle* of another <p> at
+			// the footnote reference point, and a nested <p> is invalid
+			// HTML that browsers silently tear apart, leaving an empty
+			// sidenote and orphaned stray text.
 			for c := f.FirstChild(); c != nil; c = c.NextSibling() {
-				if err := fragmentRenderer.Render(&buf, []byte(body), c); err != nil {
-					return "", err
+				for inline := c.FirstChild(); inline != nil; inline = inline.NextSibling() {
+					if err := fragmentRenderer.Render(&buf, []byte(body), inline); err != nil {
+						return "", err
+					}
+				}
+				if c.NextSibling() != nil {
+					buf.WriteString(" ")
 				}
 			}
 			footnotes[f.Index] = buf.String()

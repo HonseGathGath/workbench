@@ -16,12 +16,13 @@
   {{if .Prev}}<a class="post-nav-link prev" href="{{.Root}}posts/{{.Prev.Slug}}/">&larr; {{.Prev.Title}}</a>{{else}}<span></span>{{end}}
   {{if .Next}}<a class="post-nav-link next" href="{{.Root}}posts/{{.Next.Slug}}/">{{.Next.Title}} &rarr;</a>{{end}}
 </nav>
+{{if .Giscus.Configured}}
 <section class="comments">
   <script src="https://giscus.app/client.js"
-    data-repo="REPLACE_ME/REPLACE_ME"
-    data-repo-id="REPLACE_ME"
-    data-category="General"
-    data-category-id="REPLACE_ME"
+    data-repo="{{.Giscus.Repo}}"
+    data-repo-id="{{.Giscus.RepoID}}"
+    data-category="{{.Giscus.Category}}"
+    data-category-id="{{.Giscus.CategoryID}}"
     data-mapping="pathname"
     data-strict="0"
     data-reactions-enabled="1"
@@ -33,6 +34,7 @@
     async>
   </script>
 </section>
+{{end}}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
 <script>hljs.highlightAll();</script>

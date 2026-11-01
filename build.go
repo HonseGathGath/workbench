@@ -26,6 +26,36 @@ type postData struct {
 	Body      template.HTML
 	Prev      *Post
 	Next      *Post
+	Giscus    giscusConfig
+}
+
+// giscusConfig is read from ./giscus.json, which isn't committed until you
+// run the one-time giscus.app setup. Until all four fields are filled in,
+// Configured stays false and the template skips the comments embed
+// entirely, rather than showing every visitor a broken "giscus is not
+// installed on this repository" error box.
+type giscusConfig struct {
+	Repo       string `json:"repo"`
+	RepoID     string `json:"repoId"`
+	Category   string `json:"category"`
+	CategoryID string `json:"categoryId"`
+}
+
+func (g giscusConfig) Configured() bool {
+	return g.Repo != "" && g.RepoID != "" && g.CategoryID != ""
+}
+
+func readGiscusConfig() giscusConfig {
+	var cfg giscusConfig
+	b, err := os.ReadFile("giscus.json")
+	if err != nil {
+		return cfg
+	}
+	_ = json.Unmarshal(b, &cfg)
+	if cfg.Category == "" {
+		cfg.Category = "General"
+	}
+	return cfg
 }
 
 // Build renders the whole site (from /posts) into outDir: index.html, one
@@ -53,12 +83,13 @@ func Build(outDir string) error {
 		return err
 	}
 
+	giscus := readGiscusConfig()
 	for i, p := range posts {
 		body, err := p.Render()
 		if err != nil {
 			return fmt.Errorf("rendering %s: %w", p.Slug, err)
 		}
-		data := postData{Root: "../../", PageTitle: p.Title, Post: p, Body: body}
+		data := postData{Root: "../../", PageTitle: p.Title, Post: p, Body: body, Giscus: giscus}
 		if i > 0 {
 			data.Next = &posts[i-1]
 		}

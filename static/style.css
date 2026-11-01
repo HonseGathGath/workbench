@@ -4,7 +4,7 @@
   --ink: #241e17;
   --ink-muted: #6e6253;
   --rule: #d9ccb8;
-  --accent: #4b7a6b;
+  --accent: #3f6a5c;
   --font-display: "Fraunces", Georgia, serif;
   --font-body: "Newsreader", Georgia, serif;
   --font-sans: "Space Grotesk", "IBM Plex Sans", Arial, sans-serif;
@@ -349,7 +349,12 @@ a:hover,
 }
 
 .post-body pre {
-  background: var(--bg-raised);
+  /* Fixed light panel regardless of theme: the highlight.js stylesheet
+     loaded in post.html is a light-only syntax theme, so a dark
+     --bg-raised here would make its near-black token colors unreadable
+     in dark mode. */
+  background: #fdfcf9;
+  color: #1c1a17;
   border: 1px solid var(--rule);
   padding: 1rem;
   overflow-x: auto;

@@ -1,2 +1,5 @@
 dev:
-	go run .
+	go run . serve
+
+build:
+	go run . build

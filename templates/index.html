@@ -1,0 +1,15 @@
+{{define "index.html"}}
+{{template "header" .}}
+<section class="post-list">
+  {{range .Posts}}
+  <article class="post-summary">
+    <a class="post-summary-link" href="/posts/{{.Slug}}">
+      <p class="meta">{{.DateDisplay}}{{if .Tags}} &middot; {{range $i, $t := .Tags}}{{if $i}}, {{end}}{{$t}}{{end}}{{end}}</p>
+      <h2>{{.Title}}</h2>
+      <p class="excerpt">{{.Excerpt}}</p>
+    </a>
+  </article>
+  {{end}}
+</section>
+{{template "footer" .}}
+{{end}}

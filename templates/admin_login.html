@@ -1,21 +1,13 @@
-{{define "admin_login.html"}}<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Admin login · Workbench</title>
-<link rel="stylesheet" href="/static/admin.css">
-</head>
-<body class="admin">
-<div class="admin-box admin-box-narrow">
-  <h1>Workbench admin</h1>
-  {{if .Error}}<p class="admin-error">{{.Error}}</p>{{end}}
-  <form method="post" action="/admin/login">
+{{define "admin_login.html"}}
+{{template "header" .}}
+<section class="login-card">
+  <h1 class="page-heading">Admin login</h1>
+  {{if .Error}}<p class="flash flash-error">{{.Error}}</p>{{end}}
+  <form method="post" action="/admin/login" class="site-form">
     <label>Username<input type="text" name="username" autocomplete="username" required autofocus></label>
     <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
     <button type="submit">Log in</button>
   </form>
-</div>
-</body>
-</html>
+</section>
+{{template "footer" .}}
 {{end}}

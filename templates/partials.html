@@ -23,7 +23,18 @@
       <a class="site-title" href="/">Workbench</a>
       <p class="byline">Ghaith Lassoued</p>
     </div>
-    <button id="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">◐</button>
+    <div class="header-controls">
+      {{if .IsAdmin}}
+      <nav class="admin-nav">
+        <a href="/admin">Dashboard</a>
+        <a href="/admin/posts/new">+ New post</a>
+        <form method="post" action="/admin/logout" class="inline-form">
+          <button type="submit" class="link-button">Log out</button>
+        </form>
+      </nav>
+      {{end}}
+      <button id="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">◐</button>
+    </div>
   </div>
   <p class="site-desc">notes on an FPGA SmartNIC security/performance project.</p>
 </header>
@@ -31,7 +42,7 @@
 {{end}}
 {{define "footer"}}</main>
 <footer class="site-footer">
-  <p>Workbench &middot; <a href="/feed.xml">RSS</a></p>
+  <p>Workbench &middot; <a href="/feed.xml">RSS</a> &middot; <a href="/admin">Admin</a></p>
 </footer>
 <script src="/static/theme.js" defer></script>
 <script src="/static/search.js" defer></script>

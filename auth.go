@@ -85,11 +85,23 @@ func isTLS(r *http.Request) bool {
 // redirect to the login page instead of the handler running at all.
 func requireAuth(db *sql.DB, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie(sessionCookie)
-		if err != nil || !sessionValid(db, cookie.Value) {
+		if !isAdmin(db, r) {
 			http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
 			return
 		}
 		next(w, r)
 	}
+}
+
+// isAdmin reports whether the request carries a valid session, without
+// redirecting. Public pages use it to decide whether to show admin
+// affordances (an "edit this post" link, a "+ new post" button, drafts
+// mixed into the listing) inline, the way a logged-in author expects on
+// an ordinary blog.
+func isAdmin(db *sql.DB, r *http.Request) bool {
+	cookie, err := r.Cookie(sessionCookie)
+	if err != nil {
+		return false
+	}
+	return sessionValid(db, cookie.Value)
 }

@@ -34,16 +34,28 @@ type indexData struct {
 	PageTitle string
 	Posts     []Post
 	Tags      []string
+	IsAdmin   bool
 }
 
+// home shows published posts to the world, but drafts too — inline, with
+// a "draft" badge — to a logged-in admin, the way an ordinary blog shows
+// an author their own unpublished work without a separate screen.
 func (a *App) home(w http.ResponseWriter, r *http.Request) {
-	posts, err := ListPublished(a.db)
+	admin := isAdmin(a.db, r)
+	posts, err := a.visiblePosts(admin)
 	if err != nil {
 		log.Printf("home: %v", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	render(w, "index.html", indexData{Posts: posts, Tags: sortedTags(posts)})
+	render(w, "index.html", indexData{Posts: posts, Tags: sortedTags(posts), IsAdmin: admin})
+}
+
+func (a *App) visiblePosts(admin bool) ([]Post, error) {
+	if admin {
+		return ListAll(a.db)
+	}
+	return ListPublished(a.db)
 }
 
 type postPageData struct {
@@ -52,11 +64,14 @@ type postPageData struct {
 	Body      template.HTML
 	Prev      *Post
 	Next      *Post
+	IsAdmin   bool
 }
 
 func (a *App) post(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
-	post, err := GetPost(a.db, slug, true)
+	admin := isAdmin(a.db, r)
+
+	post, err := GetPost(a.db, slug, !admin)
 	if errors.Is(err, sql.ErrNoRows) {
 		http.NotFound(w, r)
 		return
@@ -74,8 +89,8 @@ func (a *App) post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := postPageData{PageTitle: post.Title, Post: post, Body: body}
-	if all, err := ListPublished(a.db); err == nil {
+	data := postPageData{PageTitle: post.Title, Post: post, Body: body, IsAdmin: admin}
+	if all, err := a.visiblePosts(admin); err == nil {
 		for i, p := range all {
 			if p.Slug != slug {
 				continue
@@ -176,11 +191,13 @@ func (a *App) feed(w http.ResponseWriter, r *http.Request) {
 // ---- admin ----
 
 type loginData struct {
-	Error string
+	PageTitle string
+	Error     string
+	IsAdmin   bool
 }
 
 func (a *App) loginPage(w http.ResponseWriter, r *http.Request) {
-	render(w, "admin_login.html", loginData{})
+	render(w, "admin_login.html", loginData{PageTitle: "Log in"})
 }
 
 func (a *App) loginSubmit(w http.ResponseWriter, r *http.Request) {
@@ -188,7 +205,7 @@ func (a *App) loginSubmit(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 
 	if username != a.adminUser || !checkPassword(a.adminHash, password) {
-		render(w, "admin_login.html", loginData{Error: "Incorrect username or password."})
+		render(w, "admin_login.html", loginData{PageTitle: "Log in", Error: "Incorrect username or password."})
 		return
 	}
 
@@ -210,8 +227,10 @@ func (a *App) logout(w http.ResponseWriter, r *http.Request) {
 }
 
 type dashboardData struct {
-	Posts   []Post
-	Message string
+	PageTitle string
+	Posts     []Post
+	Message   string
+	IsAdmin   bool
 }
 
 func (a *App) dashboard(w http.ResponseWriter, r *http.Request) {
@@ -227,17 +246,19 @@ func (a *App) dashboard(w http.ResponseWriter, r *http.Request) {
 	case r.URL.Query().Get("updated") != "":
 		msg = "Updated “" + r.URL.Query().Get("updated") + "”."
 	}
-	render(w, "admin_dashboard.html", dashboardData{Posts: posts, Message: msg})
+	render(w, "admin_dashboard.html", dashboardData{PageTitle: "Admin", Posts: posts, Message: msg, IsAdmin: true})
 }
 
 type formData struct {
-	Post   Post
-	IsEdit bool
-	Error  string
+	PageTitle string
+	Post      Post
+	IsEdit    bool
+	Error     string
+	IsAdmin   bool
 }
 
 func (a *App) newPostPage(w http.ResponseWriter, r *http.Request) {
-	render(w, "admin_form.html", formData{Post: Post{PostDate: time.Now()}})
+	render(w, "admin_form.html", formData{PageTitle: "New post", Post: Post{PostDate: time.Now()}, IsAdmin: true})
 }
 
 func (a *App) createPost(w http.ResponseWriter, r *http.Request) {
@@ -275,7 +296,7 @@ func (a *App) editPostPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	render(w, "admin_form.html", formData{Post: post, IsEdit: true})
+	render(w, "admin_form.html", formData{PageTitle: "Edit post", Post: post, IsEdit: true, IsAdmin: true})
 }
 
 func (a *App) updatePost(w http.ResponseWriter, r *http.Request) {
@@ -284,6 +305,7 @@ func (a *App) updatePost(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	form.PageTitle = "Edit post"
 	form.IsEdit = true
 	form.Post.Slug = slug
 	if form.Post.Title == "" {
@@ -327,5 +349,5 @@ func (a *App) parsePostForm(w http.ResponseWriter, r *http.Request) (formData, b
 		Published: r.FormValue("published") == "on",
 		PostDate:  postDate,
 	}
-	return formData{Post: post}, true
+	return formData{PageTitle: "New post", Post: post, IsAdmin: true}, true
 }

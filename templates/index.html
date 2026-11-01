@@ -13,10 +13,11 @@
   {{range .Posts}}
   <article class="post-summary" data-slug="{{.Slug}}" data-tags="{{join .Tags ","}}">
     <a class="post-summary-link" href="/posts/{{.Slug}}">
-      <p class="meta">{{.DateDisplay}} &middot; {{.ReadingMinutes}} min{{if .Tags}} &middot; {{range $i, $t := .Tags}}{{if $i}}, {{end}}{{$t}}{{end}}{{end}}</p>
+      <p class="meta">{{.DateDisplay}} &middot; {{.ReadingMinutes}} min{{if .Tags}} &middot; {{range $i, $t := .Tags}}{{if $i}}, {{end}}{{$t}}{{end}}{{end}}{{if not .Published}} &middot; <span class="badge badge-draft">draft</span>{{end}}</p>
       <h2>{{.Title}}</h2>
       <p class="excerpt">{{.Excerpt}}</p>
     </a>
+    {{if $.IsAdmin}}<a class="edit-link" href="/admin/posts/{{.Slug}}/edit">Edit</a>{{end}}
   </article>
   {{end}}
   <p class="no-results" id="no-results" hidden>No posts match.</p>

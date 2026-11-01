@@ -1,6 +1,12 @@
 {{define "post.html"}}
 {{template "header" .}}
 <article class="post">
+  {{if .IsAdmin}}
+  <p class="admin-strip">
+    {{if not .Post.Published}}<span class="badge badge-draft">draft — not visible to visitors</span> &middot; {{end}}
+    <a href="/admin/posts/{{.Post.Slug}}/edit">Edit this post</a>
+  </p>
+  {{end}}
   <p class="meta">{{.Post.DateDisplay}} &middot; {{.Post.ReadingMinutes}} min read{{if .Post.Tags}} &middot; {{range $i, $t := .Post.Tags}}{{if $i}}, {{end}}<a href="/?tag={{$t}}">{{$t}}</a>{{end}}{{end}}</p>
   <h1>{{.Post.Title}}</h1>
   <div class="post-body">

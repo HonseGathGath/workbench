@@ -1,0 +1,30 @@
+{{define "writer_edit.html"}}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{if .Post.Title}}{{.Post.Title}}{{else}}New post{{end}} — Workbench</title>
+<link rel="stylesheet" href="/assets/writer.css">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+<header class="w-topbar">
+  <a class="w-brand" href="/">&larr; Workbench</a>
+  <span id="w-status" class="w-status">{{if .IsNew}}not saved yet{{else}}saved{{end}}</span>
+</header>
+<main class="w-main w-editor">
+  <input type="hidden" id="w-slug" value="{{.Post.Slug}}">
+  <div class="w-fields">
+    <input type="text" id="w-title" placeholder="Post title" value="{{.Post.Title}}" autofocus>
+    <input type="text" id="w-tags" placeholder="tags, comma, separated" value="{{.Post.TagsJoined}}">
+    <input type="date" id="w-date" value="{{if .IsNew}}{{.Today}}{{else}}{{.Post.PostDateValue}}{{end}}">
+  </div>
+  <div class="w-panes">
+    <textarea id="w-body" placeholder="Write in Markdown. [^1] + a matching [^1]: note anywhere in the text becomes a sidenote on the published site.">{{.Post.Body}}</textarea>
+    <div id="w-preview" class="w-preview"></div>
+  </div>
+</main>
+<script src="/assets/writer.js"></script>
+</body>
+</html>
+{{end}}

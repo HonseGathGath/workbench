@@ -1,9 +1,10 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"html/template"
+	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -11,137 +12,87 @@ import (
 )
 
 type Post struct {
-	ID        int64
-	Slug      string
-	Title     string
-	Body      string
-	Tags      []string
-	Published bool
-	PostDate  time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Slug  string
+	Title string
+	Date  time.Time
+	Tags  []string
+	Body  string
 }
 
-func (p Post) DateDisplay() string            { return p.PostDate.Format("Jan 2, 2006") }
-func (p Post) PostDateValue() string          { return p.PostDate.Format("2006-01-02") }
+func (p Post) DateDisplay() string            { return p.Date.Format("Jan 2, 2006") }
+func (p Post) PostDateValue() string          { return p.Date.Format("2006-01-02") }
 func (p Post) TagsJoined() string             { return strings.Join(p.Tags, ", ") }
 func (p Post) Excerpt() string                { return excerpt(p.Body) }
 func (p Post) ReadingMinutes() int            { return readingMinutes(plainText(p.Body)) }
 func (p Post) Render() (template.HTML, error) { return renderMarkdown(p.Body) }
 
-const timeLayout = "2006-01-02 15:04:05"
-
-func scanPost(row scanner) (Post, error) {
-	var p Post
-	var tagsRaw, postDate, createdAt, updatedAt string
-	var published int
-	err := row.Scan(&p.ID, &p.Slug, &p.Title, &p.Body, &tagsRaw, &published, &postDate, &createdAt, &updatedAt)
-	if err != nil {
-		return Post{}, err
-	}
-	p.Tags = parseTags(tagsRaw)
-	p.Published = published != 0
-	p.PostDate, _ = time.Parse("2006-01-02", postDate)
-	p.CreatedAt, _ = time.Parse(timeLayout, createdAt)
-	p.UpdatedAt, _ = time.Parse(timeLayout, updatedAt)
-	return p, nil
-}
-
-// scanner is satisfied by both *sql.Row and *sql.Rows.
-type scanner interface {
-	Scan(dest ...any) error
-}
-
-const postColumns = "id, slug, title, body, tags, published, post_date, created_at, updated_at"
-
-func ListPublished(db *sql.DB) ([]Post, error) {
-	return queryPosts(db, "SELECT "+postColumns+" FROM posts WHERE published = 1 ORDER BY post_date DESC, id DESC")
-}
-
-func ListAll(db *sql.DB) ([]Post, error) {
-	return queryPosts(db, "SELECT "+postColumns+" FROM posts ORDER BY post_date DESC, id DESC")
-}
-
-func queryPosts(db *sql.DB, query string, args ...any) ([]Post, error) {
-	rows, err := db.Query(query, args...)
+// LoadPosts reads every *.md file in dir, parses its front matter and
+// Markdown body, and returns them sorted newest first.
+func LoadPosts(dir string) ([]Post, error) {
+	files, err := filepath.Glob(filepath.Join(dir, "*.md"))
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	var posts []Post
-	for rows.Next() {
-		p, err := scanPost(rows)
+	posts := make([]Post, 0, len(files))
+	for _, f := range files {
+		raw, err := os.ReadFile(f)
 		if err != nil {
 			return nil, err
 		}
-		posts = append(posts, p)
+		post, err := parsePost(raw)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", f, err)
+		}
+		post.Slug = strings.TrimSuffix(filepath.Base(f), ".md")
+		posts = append(posts, post)
 	}
-	return posts, rows.Err()
+
+	sort.Slice(posts, func(i, j int) bool { return posts[i].Date.After(posts[j].Date) })
+	return posts, nil
 }
 
-// GetPost returns sql.ErrNoRows if the slug doesn't exist. onlyPublished
-// restricts it to published posts, so a public post URL can never surface
-// a draft just because the slug was guessed.
-func GetPost(db *sql.DB, slug string, onlyPublished bool) (Post, error) {
-	query := "SELECT " + postColumns + " FROM posts WHERE slug = ?"
-	if onlyPublished {
-		query += " AND published = 1"
+var frontMatterRe = regexp.MustCompile(`(?s)^---\n(.*?)\n---\n(.*)$`)
+
+func parsePost(raw []byte) (Post, error) {
+	m := frontMatterRe.FindSubmatch(raw)
+	if m == nil {
+		return Post{}, fmt.Errorf("missing --- front matter block")
 	}
-	return scanPost(db.QueryRow(query, slug))
-}
-
-func CreatePost(db *sql.DB, title, body, tagsRaw string, published bool, postDate time.Time) (string, error) {
-	slug, err := uniqueSlug(db, title)
-	if err != nil {
-		return "", err
+	p := Post{Tags: []string{}}
+	for _, line := range strings.Split(string(m[1]), "\n") {
+		key, val, ok := strings.Cut(line, ":")
+		if !ok {
+			continue
+		}
+		val = strings.TrimSpace(val)
+		switch strings.TrimSpace(key) {
+		case "title":
+			p.Title = strings.Trim(val, `"`)
+		case "date":
+			d, err := time.Parse("2006-01-02", val)
+			if err != nil {
+				return p, fmt.Errorf("bad date %q: %w", val, err)
+			}
+			p.Date = d
+		case "tags":
+			p.Tags = parseTags(val)
+		}
 	}
-	now := time.Now().UTC().Format(timeLayout)
-	_, err = db.Exec(
-		`INSERT INTO posts (slug, title, body, tags, published, post_date, created_at, updated_at)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-		slug, title, body, normalizeTags(tagsRaw), boolToInt(published), postDate.Format("2006-01-02"), now, now,
-	)
-	return slug, err
-}
-
-// UpdatePost deliberately never changes the slug: it's the post's public
-// URL, and giscus maps comment threads to it by pathname.
-func UpdatePost(db *sql.DB, slug, title, body, tagsRaw string, published bool, postDate time.Time) error {
-	now := time.Now().UTC().Format(timeLayout)
-	_, err := db.Exec(
-		`UPDATE posts SET title = ?, body = ?, tags = ?, published = ?, post_date = ?, updated_at = ?
-		 WHERE slug = ?`,
-		title, body, normalizeTags(tagsRaw), boolToInt(published), postDate.Format("2006-01-02"), now, slug,
-	)
-	return err
-}
-
-func DeletePost(db *sql.DB, slug string) error {
-	_, err := db.Exec("DELETE FROM posts WHERE slug = ?", slug)
-	return err
-}
-
-func boolToInt(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
+	p.Body = strings.TrimSpace(string(m[2]))
+	return p, nil
 }
 
 func parseTags(raw string) []string {
-	var tags []string
+	tags := []string{}
+	raw = strings.Trim(raw, "[]")
 	for _, t := range strings.Split(raw, ",") {
-		t = strings.TrimSpace(t)
+		t = strings.TrimSpace(strings.Trim(t, `"`))
 		if t != "" {
 			tags = append(tags, t)
 		}
 	}
 	return tags
-}
-
-func normalizeTags(raw string) string {
-	return strings.Join(parseTags(raw), ", ")
 }
 
 var slugNonWord = regexp.MustCompile(`[^a-z0-9]+`)
@@ -151,23 +102,40 @@ func slugify(title string) string {
 	return strings.Trim(s, "-")
 }
 
-// uniqueSlug slugifies the title and appends -2, -3, ... on collision.
-func uniqueSlug(db *sql.DB, title string) (string, error) {
+// uniqueSlug slugifies the title and appends -2, -3, ... if a post with
+// that slug already exists on disk.
+func uniqueSlug(dir, title string) (string, error) {
 	base := slugify(title)
 	if base == "" {
-		return "", fmt.Errorf("title %q doesn't produce a usable slug", title)
+		return "", fmt.Errorf("title %q doesn't produce a usable slug (needs at least one letter or number)", title)
 	}
 	slug := base
 	for n := 2; ; n++ {
-		var exists int
-		if err := db.QueryRow("SELECT COUNT(*) FROM posts WHERE slug = ?", slug).Scan(&exists); err != nil {
-			return "", err
-		}
-		if exists == 0 {
+		if _, err := os.Stat(filepath.Join(dir, slug+".md")); os.IsNotExist(err) {
 			return slug, nil
 		}
 		slug = fmt.Sprintf("%s-%d", base, n)
 	}
+}
+
+// WritePostFile serializes title/date/tags/body as a front-matter Markdown
+// file at postsDir/slug.md, overwriting whatever was there. This is the
+// only thing that ever creates or changes a post: the local writer calls
+// it on every save, so a post file always round-trips through the same
+// format whether it was first written by hand or through the UI.
+func WritePostFile(postsDir, slug, title string, date time.Time, tags []string, body string) error {
+	if err := os.MkdirAll(postsDir, 0o755); err != nil {
+		return err
+	}
+	var sb strings.Builder
+	sb.WriteString("---\n")
+	fmt.Fprintf(&sb, "title: %s\n", title)
+	fmt.Fprintf(&sb, "date: %s\n", date.Format("2006-01-02"))
+	fmt.Fprintf(&sb, "tags: %s\n", strings.Join(tags, ", "))
+	sb.WriteString("---\n\n")
+	sb.WriteString(strings.TrimSpace(body))
+	sb.WriteString("\n")
+	return os.WriteFile(filepath.Join(postsDir, slug+".md"), []byte(sb.String()), 0o644)
 }
 
 func sortedTags(posts []Post) []string {

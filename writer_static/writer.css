@@ -1,0 +1,182 @@
+:root {
+  --bg: #fafafa;
+  --panel: #ffffff;
+  --ink: #1c1c1c;
+  --dim: #767676;
+  --border: #ddd;
+  --accent: #4b7a6b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+.w-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.w-brand {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.w-brand-sub {
+  font-weight: 400;
+  color: var(--dim);
+  font-size: 0.85rem;
+}
+
+.w-status {
+  font-size: 0.85rem;
+  color: var(--dim);
+}
+
+.w-button {
+  color: #fff;
+  background: var(--accent);
+  text-decoration: none;
+  padding: 0.4rem 0.9rem;
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
+
+.w-main {
+  padding: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.w-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.w-table th,
+.w-table td {
+  text-align: left;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.w-table a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.w-table a:hover {
+  color: var(--accent);
+}
+
+.w-dim {
+  color: var(--dim);
+  font-size: 0.9rem;
+}
+
+/* ---- editor ---- */
+
+.w-editor {
+  max-width: 1300px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 4.5rem);
+}
+
+.w-fields {
+  display: flex;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.w-fields input {
+  padding: 0.5rem 0.7rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-family: inherit;
+}
+
+#w-title {
+  flex: 2;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+#w-tags {
+  flex: 1;
+}
+
+#w-date {
+  flex: 0 0 11rem;
+}
+
+.w-panes {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  min-height: 0;
+}
+
+#w-body {
+  resize: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1rem;
+  font-family: "SF Mono", "JetBrains Mono", Menlo, monospace;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.w-preview {
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1rem 1.5rem;
+  background: var(--panel);
+  font-family: Georgia, serif;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.w-preview code {
+  font-family: "SF Mono", monospace;
+  font-size: 0.85em;
+  background: var(--bg);
+  padding: 0.1em 0.3em;
+}
+
+.w-preview pre {
+  background: var(--bg);
+  padding: 0.8rem;
+  overflow-x: auto;
+}
+
+.w-preview pre code {
+  background: none;
+  padding: 0;
+}
+
+@media (max-width: 800px) {
+  .w-panes {
+    grid-template-columns: 1fr;
+  }
+  .w-fields {
+    flex-wrap: wrap;
+  }
+}

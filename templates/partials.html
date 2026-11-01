@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{if .PageTitle}}{{.PageTitle}} · {{end}}Workbench</title>
-<link rel="alternate" type="application/rss+xml" title="Workbench" href="/feed.xml">
+<link rel="alternate" type="application/rss+xml" title="Workbench" href="{{.Root}}feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{.Root}}style.css">
 <script>
 (function () {
   var saved = localStorage.getItem("theme");
@@ -18,28 +18,17 @@
 </head>
 <body>
 <header class="topbar">
-  <a class="topbar-brand" href="/">Workbench</a>
-  <div class="topbar-controls">
-    {{if .IsAdmin}}
-    <nav class="admin-nav">
-      <a href="/admin">Dashboard</a>
-      <a href="/admin/posts/new">New post</a>
-      <form method="post" action="/admin/logout" class="inline-form">
-        <button type="submit" class="link-button">Log out</button>
-      </form>
-    </nav>
-    {{end}}
-    <button id="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">◐</button>
-  </div>
+  <a class="topbar-brand" href="{{.Root}}">Workbench</a>
+  <button id="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">◐</button>
 </header>
 <main>
 {{end}}
 {{define "footer"}}</main>
 <footer class="site-footer">
-  <p>Workbench &middot; <a href="/feed.xml">RSS</a> &middot; <a href="/admin">Admin</a></p>
+  <p>Workbench &middot; <a href="{{.Root}}feed.xml">RSS</a></p>
 </footer>
-<script src="/static/theme.js" defer></script>
-<script src="/static/search.js" defer></script>
+<script src="{{.Root}}theme.js" defer></script>
+<script src="{{.Root}}search.js" defer></script>
 </body>
 </html>
 {{end}}

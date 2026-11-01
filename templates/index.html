@@ -1,15 +1,15 @@
 {{define "index.html"}}
 {{template "header" .}}
 <section class="masthead">
-  <p class="eyebrow">Workbench</p>
   <h1 class="headline">Ghaith Lassoued</h1>
   <p class="dek">notes on an FPGA SmartNIC security/performance project.</p>
+  <hr class="title-rule">
 </section>
 <section class="controls">
-  <input type="search" id="search-input" placeholder="Search posts…" aria-label="Search posts">
+  <input type="search" id="search-input" placeholder="Search the notebook…" aria-label="Search posts">
   {{if .Tags}}
   <div class="tag-cloud" id="tag-cloud">
-    <a href="/" class="tag-chip" data-tag="">All</a>
+    <a href="{{.Root}}" class="tag-chip" data-tag="">All</a>
     {{range .Tags}}<a href="?tag={{.}}" class="tag-chip" data-tag="{{.}}">{{.}}</a>{{end}}
   </div>
   {{end}}
@@ -17,13 +17,16 @@
 <section class="entry-list" id="post-list">
   {{range .Posts}}
   <article class="entry post-summary" data-slug="{{.Slug}}" data-tags="{{join .Tags ","}}">
-    <a class="entry-link" href="/posts/{{.Slug}}">
-      <span class="entry-number"></span>
-      <h2 class="entry-heading">{{.Title}}</h2>
-      <p class="meta">{{.DateDisplay}} &middot; {{.ReadingMinutes}} min{{if .Tags}} &middot; {{range $i, $t := .Tags}}{{if $i}}, {{end}}{{$t}}{{end}}{{end}}{{if not .Published}} &middot; <span class="status status-draft">draft</span>{{end}}</p>
-      <p class="entry-body">{{.Excerpt}}</p>
+    <a class="entry-link" href="{{$.Root}}posts/{{.Slug}}/">
+      <span class="entry-row">
+        <span class="entry-index"></span>
+        <span class="entry-title">{{.Title}}</span>
+        <span class="entry-leader" aria-hidden="true"></span>
+        <span class="entry-date">{{.DateDisplay}}</span>
+      </span>
+      <p class="entry-meta">{{.ReadingMinutes}} min{{if .Tags}} &middot; {{range $j, $t := .Tags}}{{if $j}}, {{end}}{{$t}}{{end}}{{end}}</p>
+      <p class="entry-dek">{{.Excerpt}}</p>
     </a>
-    {{if $.IsAdmin}}<a class="edit-link" href="/admin/posts/{{.Slug}}/edit">Edit</a>{{end}}
   </article>
   {{end}}
   <p class="no-results" id="no-results" hidden>No posts match.</p>

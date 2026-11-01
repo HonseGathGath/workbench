@@ -1,0 +1,32 @@
+{{define "writer_list.html"}}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workbench — Write</title>
+<link rel="stylesheet" href="/assets/writer.css">
+</head>
+<body>
+<header class="w-topbar">
+  <span class="w-brand">Workbench <span class="w-brand-sub">— local writer, not public</span></span>
+  <a class="w-button" href="/new">+ New post</a>
+</header>
+<main class="w-main">
+  <table class="w-table">
+    <thead><tr><th>Title</th><th>Date</th><th>Tags</th></tr></thead>
+    <tbody>
+      {{range .Posts}}
+      <tr>
+        <td><a href="/edit/{{.Slug}}">{{.Title}}</a></td>
+        <td class="w-dim">{{.DateDisplay}}</td>
+        <td class="w-dim">{{.TagsJoined}}</td>
+      </tr>
+      {{else}}
+      <tr><td colspan="3" class="w-dim">No posts yet in /posts — <a href="/new">write the first one</a>.</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+</main>
+</body>
+</html>
+{{end}}

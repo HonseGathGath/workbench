@@ -1,23 +1,20 @@
 {{define "post.html"}}
 {{template "header" .}}
 <article class="post">
-  {{if .IsAdmin}}
-  <p class="admin-strip">
-    {{if not .Post.Published}}<span class="status status-draft">draft — not visible to visitors</span> &middot; {{end}}
-    <a href="/admin/posts/{{.Post.Slug}}/edit">Edit this post</a>
-  </p>
-  {{end}}
-  <p class="eyebrow">{{if .Post.Tags}}{{index .Post.Tags 0}}{{else}}Workbench{{end}}</p>
-  <h1 class="headline">{{.Post.Title}}</h1>
-  {{with .Post.Excerpt}}<p class="dek">{{.}}</p>{{end}}
-  <p class="meta">{{.Post.DateDisplay}} &middot; {{.Post.ReadingMinutes}} min read{{if .Post.Tags}} &middot; {{range $i, $t := .Post.Tags}}{{if $i}}, {{end}}<a href="/?tag={{$t}}">{{$t}}</a>{{end}}{{end}}</p>
+  <section class="masthead">
+    <p class="kicker">{{if .Post.Tags}}{{index .Post.Tags 0}}{{else}}field note{{end}}</p>
+    <h1 class="headline">{{.Post.Title}}</h1>
+    {{with .Post.Excerpt}}<p class="dek">{{.}}</p>{{end}}
+    <p class="byline">{{.Post.DateDisplay}} &middot; {{.Post.ReadingMinutes}} min read{{if .Post.Tags}} &middot; {{range $i, $t := .Post.Tags}}{{if $i}}, {{end}}<a href="{{$.Root}}?tag={{$t}}">{{$t}}</a>{{end}}{{end}}</p>
+    <hr class="title-rule">
+  </section>
   <div class="post-body">
     {{.Body}}
   </div>
 </article>
 <nav class="post-nav">
-  {{if .Prev}}<a class="post-nav-link prev" href="/posts/{{.Prev.Slug}}">&larr; {{.Prev.Title}}</a>{{else}}<span></span>{{end}}
-  {{if .Next}}<a class="post-nav-link next" href="/posts/{{.Next.Slug}}">{{.Next.Title}} &rarr;</a>{{end}}
+  {{if .Prev}}<a class="post-nav-link prev" href="{{.Root}}posts/{{.Prev.Slug}}/">&larr; {{.Prev.Title}}</a>{{else}}<span></span>{{end}}
+  {{if .Next}}<a class="post-nav-link next" href="{{.Root}}posts/{{.Next.Slug}}/">{{.Next.Title}} &rarr;</a>{{end}}
 </nav>
 <section class="comments">
   <script src="https://giscus.app/client.js"

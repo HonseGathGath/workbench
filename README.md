@@ -10,6 +10,10 @@ computer). Quick reference:
     go run . write     # local writer at http://localhost:8090
     go run . build     # builds the public site into ./public
 
+Or install it once as a global command (`go install .`, then set
+`WORKBENCH_REPO` to this directory's absolute path — see the PDF) and
+run `workbench write` / `workbench build` from anywhere.
+
 Posts are Markdown files with front matter in `/posts`. Footnotes
 (`[^1]` ... `[^1]: text`) become margin sidenotes. Deploy is GitHub
 Pages via `.github/workflows/deploy.yml`, which runs on every push to

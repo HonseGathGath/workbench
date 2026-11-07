@@ -210,7 +210,7 @@ func writeFeed(outDir string, posts []Post) error {
 	channel := rssChannel{
 		Title:       "Workbench",
 		Link:        siteLink,
-		Description: "notes on an FPGA SmartNIC security/performance project.",
+		Description: "Breaking things until they make sense.",
 	}
 	for _, p := range posts {
 		channel.Items = append(channel.Items, rssItem{

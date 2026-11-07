@@ -127,14 +127,16 @@ func plainText(body string) string {
 }
 
 var (
-	headingRe  = regexp.MustCompile(`(?m)^#+\s*`)
-	mdLinkRe   = regexp.MustCompile(`\[([^\]]*)\]\([^)]*\)`)
-	footnoteRe = regexp.MustCompile(`\[\^[^\]]*\](?::[^\n]*)?`)
-	emphasisRe = regexp.MustCompile("[*_`#>]")
+	headingRe    = regexp.MustCompile(`(?m)^#+\s*`)
+	blockquoteRe = regexp.MustCompile(`(?m)^>\s?`)
+	mdLinkRe     = regexp.MustCompile(`\[([^\]]*)\]\([^)]*\)`)
+	footnoteRe   = regexp.MustCompile(`\[\^[^\]]*\](?::[^\n]*)?`)
+	emphasisRe   = regexp.MustCompile("[*_`]")
 )
 
 func stripMarkdown(s string) string {
 	s = headingRe.ReplaceAllString(s, "")
+	s = blockquoteRe.ReplaceAllString(s, "")
 	s = mdLinkRe.ReplaceAllString(s, "$1")
 	s = footnoteRe.ReplaceAllString(s, "")
 	s = emphasisRe.ReplaceAllString(s, "")

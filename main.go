@@ -35,10 +35,25 @@ var tmpl = template.Must(template.New("").Funcs(template.FuncMap{
 	"join": strings.Join,
 }).ParseFS(templateFS, "templates/*.html"))
 
+// chdirToRepo lets the installed "workbench" binary be run from anywhere:
+// if WORKBENCH_REPO is set (one-time export after `go install .`), it
+// switches into that directory first so posts/, site.url, and giscus.json
+// are found there instead of relative to wherever the shell happens to be.
+func chdirToRepo() {
+	repo := os.Getenv("WORKBENCH_REPO")
+	if repo == "" {
+		return
+	}
+	if err := os.Chdir(repo); err != nil {
+		log.Fatalf("WORKBENCH_REPO=%s: %v", repo, err)
+	}
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		usage()
 	}
+	chdirToRepo()
 
 	switch os.Args[1] {
 	case "write":
@@ -59,7 +74,12 @@ func main() {
 
 func usage() {
 	fmt.Fprintln(os.Stderr, `usage:
-  go run . write [port]   start the local writer (default port 8090, localhost only)
-  go run . build          build the public static site into ./public`)
+  workbench write [port]   start the local writer (default port 8090, localhost only)
+  workbench build          build the public static site into ./public
+
+(also works as: go run . write / go run . build, from inside the repo)
+
+Set WORKBENCH_REPO to the repo's absolute path to run either command
+from any directory once "workbench" is installed on your PATH.`)
 	os.Exit(1)
 }

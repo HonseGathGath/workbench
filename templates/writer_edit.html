@@ -5,13 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{if .Post.Title}}{{.Post.Title}}{{else}}New post{{end}} — Workbench</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='14' fill='%233f6a5c'/%3E%3Ctext x='50' y='68' font-size='56' font-family='Georgia,serif' font-weight='700' fill='%23f1eae0' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/writer.css">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script>
+(function () {
+  var saved = localStorage.getItem("theme");
+  var theme = saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
+})();
+</script>
 </head>
 <body>
 <header class="w-topbar">
   <a class="w-brand" href="/">&larr; Workbench</a>
-  <span id="w-status" class="w-status">{{if .IsNew}}not saved yet{{else}}saved{{end}}</span>
+  <span class="w-topbar-right">
+    <span id="w-status" class="w-status">{{if .IsNew}}not saved yet{{else}}saved{{end}}</span>
+    <button id="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">◐</button>
+  </span>
 </header>
 <main class="w-main w-editor">
   <input type="hidden" id="w-slug" value="{{.Post.Slug}}">

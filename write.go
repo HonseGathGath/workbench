@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -29,7 +30,7 @@ func RunWriter(port string) {
 	mux.HandleFunc("GET /new", writerNew)
 	mux.HandleFunc("GET /edit/{slug}", writerEdit)
 	mux.HandleFunc("POST /api/save", writerSave)
-	mux.Handle("GET /assets/", http.FileServer(http.FS(writerStaticFS)))
+	mux.Handle("GET /assets/", http.StripPrefix("/assets/", http.FileServer(http.FS(writerStaticFS))))
 
 	addr := "127.0.0.1:" + port
 	url := "http://" + addr
@@ -83,6 +84,16 @@ type saveRequest struct {
 }
 
 func writerSave(w http.ResponseWriter, r *http.Request) {
+	// Requiring the exact application/json content type means a plain HTML
+	// form or fetch() from another page can't hit this endpoint as a CORS
+	// "simple request" (which skips preflight) — that would otherwise let
+	// any page open in the same browser silently write posts while this
+	// localhost-only, auth-free server is running.
+	if ct := r.Header.Get("Content-Type"); !strings.HasPrefix(ct, "application/json") {
+		http.Error(w, "expected application/json", http.StatusUnsupportedMediaType)
+		return
+	}
+
 	var req saveRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "bad request", http.StatusBadRequest)
@@ -98,7 +109,11 @@ func writerSave(w http.ResponseWriter, r *http.Request) {
 		date = time.Now()
 	}
 
-	slug := req.Slug
+	// slugify() runs on a client-supplied slug too, not just a generated
+	// one — otherwise a crafted slug like "../../whatever" would pass
+	// straight through to WritePostFile's filepath.Join and write outside
+	// posts/, anywhere the OS user has access.
+	slug := slugify(req.Slug)
 	if slug == "" {
 		slug, err = uniqueSlug(postsDir, req.Title)
 		if err != nil {

@@ -1,10 +1,23 @@
 :root {
-  --bg: #fafafa;
-  --panel: #ffffff;
-  --ink: #1c1c1c;
-  --dim: #767676;
-  --border: #ddd;
-  --accent: #4b7a6b;
+  --bg: #f1eae0;
+  --bg-raised: #e7ddce;
+  --ink: #241e17;
+  --ink-muted: #6e6253;
+  --rule: #d9ccb8;
+  --accent: #3f6a5c;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Newsreader", Georgia, serif;
+  --font-sans: "Space Grotesk", "IBM Plex Sans", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", monospace;
+}
+
+html[data-theme="dark"] {
+  --bg: #1b1611;
+  --bg-raised: #241d16;
+  --ink: #ede3d3;
+  --ink-muted: #a79c8a;
+  --rule: #352b20;
+  --accent: #74b39f;
 }
 
 * {
@@ -16,7 +29,8 @@ html, body {
   height: 100%;
   background: var(--bg);
   color: var(--ink);
-  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .w-topbar {
@@ -24,34 +38,50 @@ html, body {
   justify-content: space-between;
   align-items: center;
   padding: 0.9rem 1.5rem;
-  border-bottom: 1px solid var(--border);
-  background: var(--panel);
+  border-bottom: 1px solid var(--rule);
 }
 
 .w-brand {
   color: var(--ink);
   text-decoration: none;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-weight: 700;
 }
 
 .w-brand-sub {
+  font-family: var(--font-sans);
   font-weight: 400;
-  color: var(--dim);
+  color: var(--ink-muted);
   font-size: 0.85rem;
 }
 
 .w-status {
   font-size: 0.85rem;
-  color: var(--dim);
+  color: var(--ink-muted);
+}
+
+#theme-toggle {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--ink);
+  padding: 0.2rem 0.4rem;
+  margin-left: 0.75rem;
+}
+
+.w-topbar-right {
+  display: flex;
+  align-items: center;
 }
 
 .w-button {
-  color: #fff;
+  color: var(--bg);
   background: var(--accent);
   text-decoration: none;
   padding: 0.4rem 0.9rem;
-  border-radius: 5px;
   font-size: 0.9rem;
+  font-family: var(--font-sans);
 }
 
 .w-main {
@@ -69,7 +99,7 @@ html, body {
 .w-table td {
   text-align: left;
   padding: 0.6rem 0.5rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--rule);
 }
 
 .w-table a {
@@ -82,7 +112,7 @@ html, body {
 }
 
 .w-dim {
-  color: var(--dim);
+  color: var(--ink-muted);
   font-size: 0.9rem;
 }
 
@@ -104,15 +134,21 @@ html, body {
 .w-fields input {
   padding: 0.5rem 0.7rem;
   font-size: 0.95rem;
-  border: 1px solid var(--border);
-  border-radius: 5px;
+  border: 1px solid var(--rule);
+  background: var(--bg-raised);
+  color: var(--ink);
   font-family: inherit;
+}
+
+.w-fields input::placeholder {
+  color: var(--ink-muted);
 }
 
 #w-title {
   flex: 2;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-weight: 700;
 }
 
 #w-tags {
@@ -133,29 +169,31 @@ html, body {
 
 #w-body {
   resize: none;
-  border: 1px solid var(--border);
-  border-radius: 5px;
+  border: 1px solid var(--rule);
   padding: 1rem;
-  font-family: "SF Mono", "JetBrains Mono", Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 0.95rem;
   line-height: 1.6;
-  background: var(--panel);
+  background: var(--bg-raised);
   color: var(--ink);
+}
+
+#w-body::placeholder {
+  color: var(--ink-muted);
 }
 
 .w-preview {
   overflow-y: auto;
-  border: 1px solid var(--border);
-  border-radius: 5px;
+  border: 1px solid var(--rule);
   padding: 1rem 1.5rem;
-  background: var(--panel);
-  font-family: Georgia, serif;
+  background: var(--bg-raised);
+  font-family: var(--font-body);
   font-size: 1.05rem;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .w-preview code {
-  font-family: "SF Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.85em;
   background: var(--bg);
   padding: 0.1em 0.3em;

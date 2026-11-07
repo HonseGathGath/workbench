@@ -1,4 +1,14 @@
 (function () {
+  var themeToggle = document.getElementById("theme-toggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
+      var current = document.documentElement.getAttribute("data-theme");
+      var next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    });
+  }
+
   var titleEl = document.getElementById("w-title");
   var tagsEl = document.getElementById("w-tags");
   var dateEl = document.getElementById("w-date");
@@ -10,7 +20,8 @@
 
   function renderPreview() {
     if (window.marked) {
-      previewEl.innerHTML = marked.parse(bodyEl.value || "");
+      var html = marked.parse(bodyEl.value || "");
+      previewEl.innerHTML = window.DOMPurify ? DOMPurify.sanitize(html) : html;
     } else {
       previewEl.textContent = bodyEl.value;
     }

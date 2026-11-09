@@ -1,24 +1,25 @@
 :root {
-  --bg: #f1eae0;
-  --bg-raised: #e7ddce;
-  --ink: #241e17;
-  --ink-muted: #6e6253;
-  --rule: #d9ccb8;
-  --accent: #3f6a5c;
-  --font-display: "Fraunces", Georgia, serif;
-  --font-body: "Newsreader", Georgia, serif;
-  --font-sans: "Space Grotesk", "IBM Plex Sans", Arial, sans-serif;
-  --font-mono: "IBM Plex Mono", "SF Mono", monospace;
+  --bg: #eef0ea;
+  --bg-raised: #e3e6dc;
+  --ink: #1c1e1a;
+  --ink-muted: #6b7066;
+  --rule: #cfd3c6;
+  --accent: #b23a2c;
+  --accent-ink: #8a2c21;
+  --font-display: "Zilla Slab", Georgia, serif;
+  --font-body: "Spectral", Georgia, serif;
+  --font-mono: "JetBrains Mono", "SF Mono", monospace;
   --col-width: 660px;
 }
 
 html[data-theme="dark"] {
-  --bg: #1b1611;
-  --bg-raised: #241d16;
-  --ink: #ede3d3;
-  --ink-muted: #a79c8a;
-  --rule: #352b20;
-  --accent: #74b39f;
+  --bg: #13150f;
+  --bg-raised: #1b1e17;
+  --ink: #e4e6dd;
+  --ink-muted: #a3a89b;
+  --rule: #333730;
+  --accent: #e07a68;
+  --accent-ink: #ef9686;
 }
 
 * {
@@ -46,6 +47,7 @@ main {
 a {
   color: inherit;
   text-decoration: none;
+  transition: color 0.12s ease;
 }
 
 .post-body a,
@@ -57,10 +59,48 @@ a {
 a:hover,
 .post-body a:hover,
 .dek a:hover {
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
-/* ---- masthead shell (shared by every page) ---- */
+/* ---- browser surfaces: theme what we didn't draw ---- */
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--rule);
+  border: 2px solid var(--bg);
+  border-radius: 6px;
+}
+
+html {
+  scrollbar-color: var(--rule) var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.entry-date,
+.entry-sheet,
+.topbar-sheet,
+.rail-left {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- masthead shell: a title block, not a nav bar ---- */
 
 .topbar,
 .site-footer,
@@ -79,18 +119,40 @@ a:hover,
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.7rem 1.5rem 1.3rem;
-  border-bottom: 1px solid var(--rule);
+  padding: 1.7rem 1.5rem 1.2rem;
+  border-bottom: 2px solid var(--ink);
+}
+
+.topbar-left {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .topbar-brand {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.15rem;
+  font-weight: 700;
+  font-size: 1.2rem;
 }
 
 .topbar-brand:hover {
-  color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.topbar-meta {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+}
+
+.topbar-sheet {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.topbar-revised {
+  color: var(--accent-ink);
 }
 
 #theme-toggle {
@@ -107,29 +169,19 @@ a:hover,
 
 #theme-toggle:hover {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
-/* ---- masthead: the one deliberate accent mark per page ---- */
+/* ---- masthead ---- */
 
 .masthead {
   margin-top: 3rem;
   padding-bottom: 2rem;
 }
 
-.kicker {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--ink-muted);
-  margin: 0 0 0.8rem;
-}
-
 .headline {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   font-size: clamp(2rem, 4.5vw, 3rem);
   line-height: 1.1;
   letter-spacing: -0.01em;
@@ -151,21 +203,21 @@ a:hover,
 }
 
 .byline {
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.01em;
   color: var(--ink-muted);
   margin: 0;
 }
 
 .byline a:hover {
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .title-rule {
-  width: 48px;
-  height: 2px;
-  background: var(--accent);
+  width: 100%;
+  height: 3px;
+  background: var(--ink);
   border: none;
   margin: 1.4rem 0 0;
 }
@@ -203,10 +255,9 @@ a:hover,
   display: flex;
   flex-wrap: wrap;
   gap: 0 1.1rem;
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
 }
 
 .tag-chip {
@@ -217,7 +268,7 @@ a:hover,
 
 .tag-chip:hover,
 .tag-chip.active {
-  color: var(--accent);
+  color: var(--accent-ink);
   border-bottom-color: var(--accent);
 }
 
@@ -227,15 +278,13 @@ a:hover,
   padding: 1.8rem 0;
 }
 
-/* ---- entry list: a table of contents, not a card list ---- */
+/* ---- entry list: a sheet index, numbered oldest-to-newest ---- */
 
 .entry-list {
   margin-top: 1rem;
-  counter-reset: entry;
 }
 
 .entry {
-  counter-increment: entry;
   padding: 1.6rem 0;
   border-top: 1px solid var(--rule);
 }
@@ -255,16 +304,12 @@ a:hover,
   gap: 0.1rem;
 }
 
-.entry-index {
-  font-family: var(--font-sans);
+.entry-sheet {
+  font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--ink-muted);
-  width: 1.7em;
+  width: 2.6em;
   flex-shrink: 0;
-}
-
-.entry-index::before {
-  content: counter(entry, decimal-leading-zero);
 }
 
 .entry-title {
@@ -275,7 +320,7 @@ a:hover,
 }
 
 .entry-link:hover .entry-title {
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .entry-leader {
@@ -287,7 +332,7 @@ a:hover,
 }
 
 .entry-date {
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: 0.78rem;
   color: var(--ink-muted);
   white-space: nowrap;
@@ -295,18 +340,22 @@ a:hover,
 }
 
 .entry-meta {
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: 0.78rem;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   color: var(--ink-muted);
-  margin: 0.5rem 0 0 1.8em;
+  margin: 0.5rem 0 0 2.7em;
+}
+
+.entry-revised {
+  color: var(--accent-ink);
 }
 
 .entry-dek {
   font-family: var(--font-body);
   font-size: 0.98rem;
   color: var(--ink-muted);
-  margin: 0.5rem 0 0 1.8em;
+  margin: 0.5rem 0 0 2.7em;
   max-width: 36em;
 }
 
@@ -323,6 +372,7 @@ a:hover,
 
 .post-body {
   margin-top: 2rem;
+  position: relative;
 }
 
 .post-body h2 {
@@ -388,10 +438,9 @@ a:hover,
 }
 
 .post-body th {
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
   color: var(--ink-muted);
 }
 
@@ -400,14 +449,48 @@ a:hover,
   padding-left: 1.4rem;
 }
 
+/* ---- rail: the sheet number — and, when the post has one, its revision
+   mark — restated in the margin, a quiet structural echo of the title
+   block, visible once there's room beside the column without crowding
+   the sidenote gutter on the other side ---- */
+
+.rail-left {
+  display: none;
+}
+
+@media (min-width: 1320px) {
+  .rail-left {
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 0.9rem;
+    position: absolute;
+    top: 0.3rem;
+    left: 0;
+    transform: translateX(calc(-100% - 2.5rem));
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    letter-spacing: 0.04em;
+  }
+
+  .rail-sheet {
+    color: var(--ink-muted);
+  }
+
+  .rail-revised {
+    color: var(--accent-ink);
+  }
+}
+
 /* ---- sidenotes: marginalia, not a pull-quote ---- */
 
 .sidenote-number {
   vertical-align: super;
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-weight: 700;
   font-size: 0.6em;
-  color: var(--accent);
+  color: var(--accent-ink);
   cursor: pointer;
   margin-left: 0.15em;
 }
@@ -463,14 +546,14 @@ input.margin-toggle {
   margin-top: 3rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--rule);
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   color: var(--ink-muted);
 }
 
 .post-nav-link:hover {
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .post-nav-link.next {
@@ -485,10 +568,9 @@ input.margin-toggle {
 .site-footer {
   padding: 2rem 1.5rem 3rem;
   color: var(--ink-muted);
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .site-footer p {
@@ -496,7 +578,7 @@ input.margin-toggle {
 }
 
 .site-footer a:hover {
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 @media (max-width: 480px) {
@@ -513,6 +595,6 @@ input.margin-toggle {
     flex-wrap: wrap;
   }
   .entry-date {
-    margin-left: 1.8em;
+    margin-left: 2.7em;
   }
 }

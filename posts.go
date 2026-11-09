@@ -12,15 +12,26 @@ import (
 )
 
 type Post struct {
-	Slug  string
-	Title string
-	Date  time.Time
-	Tags  []string
-	Body  string
+	Slug    string
+	Title   string
+	Date    time.Time
+	Updated time.Time // zero when the post has never been revised post-publish
+	Tags    []string
+	Body    string
+	Seq     int // chronological position (oldest = 1), assigned by LoadPosts
 }
 
-func (p Post) DateDisplay() string            { return p.Date.Format("Jan 2, 2006") }
-func (p Post) PostDateValue() string          { return p.Date.Format("2006-01-02") }
+func (p Post) DateDisplay() string    { return p.Date.Format("Jan 2, 2006") }
+func (p Post) PostDateValue() string  { return p.Date.Format("2006-01-02") }
+func (p Post) HasUpdate() bool        { return !p.Updated.IsZero() }
+func (p Post) UpdatedDisplay() string { return p.Updated.Format("Jan 2, 2006") }
+func (p Post) UpdatedDateValue() string {
+	if p.Updated.IsZero() {
+		return ""
+	}
+	return p.Updated.Format("2006-01-02")
+}
+func (p Post) SheetNo() string                { return fmt.Sprintf("%03d", p.Seq) }
 func (p Post) TagsJoined() string             { return strings.Join(p.Tags, ", ") }
 func (p Post) Excerpt() string                { return excerpt(p.Body) }
 func (p Post) ReadingMinutes() int            { return readingMinutes(plainText(p.Body)) }
@@ -49,6 +60,15 @@ func LoadPosts(dir string) ([]Post, error) {
 	}
 
 	sort.Slice(posts, func(i, j int) bool { return posts[i].Date.After(posts[j].Date) })
+
+	// Seq is each post's position in current chronological order, oldest
+	// first — a sheet number, not a stable database ID. It's recomputed on
+	// every load/build, so deleting an old post reflows the numbers after
+	// it; nothing in the site (slugs, links, comment threads) depends on a
+	// Seq value staying fixed.
+	for i := range posts {
+		posts[i].Seq = len(posts) - i
+	}
 	return posts, nil
 }
 
@@ -75,6 +95,14 @@ func parsePost(raw []byte) (Post, error) {
 				return p, fmt.Errorf("bad date %q: %w", val, err)
 			}
 			p.Date = d
+		case "updated":
+			if val != "" {
+				d, err := time.Parse("2006-01-02", val)
+				if err != nil {
+					return p, fmt.Errorf("bad updated date %q: %w", val, err)
+				}
+				p.Updated = d
+			}
 		case "tags":
 			p.Tags = parseTags(val)
 		}
@@ -118,12 +146,13 @@ func uniqueSlug(dir, title string) (string, error) {
 	}
 }
 
-// WritePostFile serializes title/date/tags/body as a front-matter Markdown
-// file at postsDir/slug.md, overwriting whatever was there. This is the
-// only thing that ever creates or changes a post: the local writer calls
+// WritePostFile serializes title/date/updated/tags/body as a front-matter
+// Markdown file at postsDir/slug.md, overwriting whatever was there. This is
+// the only thing that ever creates or changes a post: the local writer calls
 // it on every save, so a post file always round-trips through the same
-// format whether it was first written by hand or through the UI.
-func WritePostFile(postsDir, slug, title string, date time.Time, tags []string, body string) error {
+// format whether it was first written by hand or through the UI. updated is
+// the zero time.Time when the post has no revision marker.
+func WritePostFile(postsDir, slug, title string, date, updated time.Time, tags []string, body string) error {
 	if err := os.MkdirAll(postsDir, 0o755); err != nil {
 		return err
 	}
@@ -131,11 +160,25 @@ func WritePostFile(postsDir, slug, title string, date time.Time, tags []string, 
 	sb.WriteString("---\n")
 	fmt.Fprintf(&sb, "title: %s\n", title)
 	fmt.Fprintf(&sb, "date: %s\n", date.Format("2006-01-02"))
+	if !updated.IsZero() {
+		fmt.Fprintf(&sb, "updated: %s\n", updated.Format("2006-01-02"))
+	}
 	fmt.Fprintf(&sb, "tags: %s\n", strings.Join(tags, ", "))
 	sb.WriteString("---\n\n")
 	sb.WriteString(strings.TrimSpace(body))
 	sb.WriteString("\n")
 	return os.WriteFile(filepath.Join(postsDir, slug+".md"), []byte(sb.String()), 0o644)
+}
+
+// DeletePostFile removes postsDir/slug.md. slug must already be the
+// sanitized output of slugify (callers are responsible for that — see
+// writerDelete), so this never takes a raw path from a request.
+func DeletePostFile(postsDir, slug string) error {
+	path := filepath.Join(postsDir, slug+".md")
+	if _, err := os.Stat(path); err != nil {
+		return err
+	}
+	return os.Remove(path)
 }
 
 func sortedTags(posts []Post) []string {

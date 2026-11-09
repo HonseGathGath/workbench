@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{if .PageTitle}}{{.PageTitle}} · {{end}}Workbench</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='14' fill='%233f6a5c'/%3E%3Ctext x='50' y='68' font-size='56' font-family='Georgia,serif' font-weight='700' fill='%23f1eae0' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='4' fill='%23b23a2c'/%3E%3Ctext x='50' y='68' font-size='56' font-family='Georgia,serif' font-weight='700' fill='%23eef0ea' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E">
 <link rel="alternate" type="application/rss+xml" title="Workbench" href="{{.Root}}feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{.Root}}style.css">
 <script>
 (function () {
@@ -19,11 +19,15 @@
 </head>
 <body>
 <header class="topbar">
-  <a class="topbar-brand" href="{{.Root}}">Workbench</a>
-  <button id="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">◐</button>
+  <span class="topbar-left">
+    <a class="topbar-brand" href="{{.Root}}">Workbench</a>
+    {{if .TopbarMeta}}<span class="topbar-meta">{{.TopbarMeta}}</span>{{end}}
+  </span>
+  <button id="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">{{template "theme-icon"}}</button>
 </header>
 <main>
 {{end}}
+{{define "theme-icon"}}<svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="6.25" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.75a6.25 6.25 0 0 0 0 12.5V1.75Z" fill="currentColor"/></svg>{{end}}
 {{define "footer"}}</main>
 <footer class="site-footer">
   <p>Workbench &middot; <a href="{{.Root}}feed.xml">RSS</a></p>

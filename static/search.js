@@ -31,7 +31,12 @@
       card.style.display = show ? "" : "none";
       if (show) visible++;
     });
-    if (noResults) noResults.hidden = visible > 0;
+    if (noResults) {
+      noResults.hidden = visible > 0;
+      noResults.textContent = cards.length === 0
+        ? "Nothing published yet — check back soon."
+        : "No posts match.";
+    }
   }
 
   if (input) input.addEventListener("input", applyFilter);

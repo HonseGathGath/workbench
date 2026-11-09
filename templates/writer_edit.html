@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{if .Post.Title}}{{.Post.Title}}{{else}}New post{{end}} — Workbench</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='14' fill='%233f6a5c'/%3E%3Ctext x='50' y='68' font-size='56' font-family='Georgia,serif' font-weight='700' fill='%23f1eae0' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='4' fill='%23b23a2c'/%3E%3Ctext x='50' y='68' font-size='56' font-family='Georgia,serif' font-weight='700' fill='%23eef0ea' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/writer.css">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
@@ -23,7 +23,8 @@
   <a class="w-brand" href="/">&larr; Workbench</a>
   <span class="w-topbar-right">
     <span id="w-status" class="w-status">{{if .IsNew}}not saved yet{{else}}saved{{end}}</span>
-    <button id="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">◐</button>
+    {{if not .IsNew}}<button id="w-delete" class="w-delete" type="button">Delete</button>{{end}}
+    <button id="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">{{template "theme-icon"}}</button>
   </span>
 </header>
 <main class="w-main w-editor">
@@ -32,6 +33,7 @@
     <input type="text" id="w-title" placeholder="Post title" value="{{.Post.Title}}" autofocus>
     <input type="text" id="w-tags" placeholder="tags, comma, separated" value="{{.Post.TagsJoined}}">
     <input type="date" id="w-date" value="{{if .IsNew}}{{.Today}}{{else}}{{.Post.PostDateValue}}{{end}}">
+    {{if not .IsNew}}<input type="date" id="w-updated" value="{{.Post.UpdatedDateValue}}" title="Revised date (optional) — set this when you substantively correct or update the post after publishing.">{{end}}
   </div>
   <div class="w-panes">
     <textarea id="w-body" placeholder="Write in Markdown. [^1] + a matching [^1]: note anywhere in the text becomes a sidenote on the published site.">{{.Post.Body}}</textarea>

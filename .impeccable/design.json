@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-10T00:00:00Z",
+  "title": "Design System: Workbench",
+  "extensions": {
+    "colorMeta": {
+      "cool-paper": { "role": "neutral", "displayName": "Cool Paper", "canonical": "#eef0ea", "tonalRamp": ["#13150f", "#1b1e17", "#333730", "#6b7066", "#a3a89b", "#cfd3c6", "#e3e6dc", "#eef0ea"] },
+      "raised-paper": { "role": "neutral", "displayName": "Raised Paper", "canonical": "#e3e6dc", "tonalRamp": ["#13150f", "#1b1e17", "#333730", "#6b7066", "#a3a89b", "#cfd3c6", "#e3e6dc", "#eef0ea"] },
+      "graphite-ink": { "role": "neutral", "displayName": "Graphite Ink", "canonical": "#1c1e1a", "tonalRamp": ["#1c1e1a", "#2a2c27", "#3d4038", "#565a50", "#6b7066", "#9ba095", "#c7ccbd", "#eef0ea"] },
+      "muted-ink": { "role": "neutral", "displayName": "Muted Ink", "canonical": "#6b7066", "tonalRamp": ["#1c1e1a", "#3d4038", "#565a50", "#6b7066", "#858a7d", "#a3a89b", "#c7ccbd", "#eef0ea"] },
+      "hairline-rule": { "role": "neutral", "displayName": "Hairline Rule", "canonical": "#cfd3c6", "tonalRamp": ["#1c1e1a", "#333730", "#565a50", "#858a7d", "#a3a89b", "#cfd3c6", "#e3e6dc", "#eef0ea"] },
+      "redline": { "role": "primary", "displayName": "Redline", "canonical": "#b23a2c", "tonalRamp": ["#3a1209", "#5e1f14", "#8a2c21", "#b23a2c", "#c85a4c", "#e07a68", "#ef9686", "#f7c3b8"] },
+      "redline-ink": { "role": "primary", "displayName": "Redline Ink", "canonical": "#8a2c21", "tonalRamp": ["#2e0f08", "#4e1c14", "#8a2c21", "#b23a2c", "#c85a4c", "#e07a68", "#ef9686", "#f7c3b8"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display (Zilla Slab)", "purpose": "Post and index headlines only." },
+      "title": { "displayName": "Title (Zilla Slab)", "purpose": "Sheet-list entry titles, writer table row titles." },
+      "dek": { "displayName": "Dek (Spectral italic)", "purpose": "Subhead directly beneath a headline; excerpt text." },
+      "body": { "displayName": "Body (Spectral)", "purpose": "Post reading copy, 660px measure." },
+      "label": { "displayName": "Label (JetBrains Mono)", "purpose": "All post metadata: dates, sheet numbers, tags, byline, nav labels, table cells." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "color-transition", "value": "0.12s ease / 0.15s ease", "purpose": "Link, theme-toggle, and background/color transitions on hover and theme switch." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "480px" },
+      { "name": "writer-stack", "value": "800px" },
+      { "name": "rail-and-sidenote", "value": "1320px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Entry Row (Sheet List)",
+      "kind": "custom",
+      "refersTo": "entry-row",
+      "description": "Flat post-index row: sheet number, title, dotted leader, date, then a mono meta line and dek.",
+      "html": "<article class=\"ds-entry\"><a class=\"ds-entry-link\" href=\"#\"><span class=\"ds-entry-row\"><span class=\"ds-entry-sheet\">#001</span><span class=\"ds-entry-title\">Bringing up the FPGA toolchain</span><span class=\"ds-entry-leader\"></span><span class=\"ds-entry-date\">Nov 2, 2026</span></span><p class=\"ds-entry-meta\">6 min &middot; fpga, rtl</p><p class=\"ds-entry-dek\">A log of getting the open-source toolchain to talk to the board at all.</p></a></article>",
+      "css": ".ds-entry { padding: 1.6rem 0; border-top: 1px solid #cfd3c6; } .ds-entry-link { display: block; color: inherit; text-decoration: none; } .ds-entry-row { display: flex; align-items: baseline; gap: 0.1rem; } .ds-entry-sheet { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #6b7066; width: 2.6em; flex-shrink: 0; } .ds-entry-title { font-family: 'Zilla Slab', Georgia, serif; font-weight: 600; font-size: 1.3rem; color: #1c1e1a; } .ds-entry-link:hover .ds-entry-title { color: #8a2c21; } .ds-entry-leader { flex: 1 1 auto; min-width: 1rem; border-bottom: 1px dotted #cfd3c6; transform: translateY(-0.4em); margin: 0 0.6em; } .ds-entry-date { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: #6b7066; white-space: nowrap; flex-shrink: 0; } .ds-entry-meta, .ds-entry-dek { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: #6b7066; margin: 0.5rem 0 0 2.7em; } .ds-entry-dek { font-family: 'Spectral', Georgia, serif; font-size: 0.98rem; max-width: 36em; }"
+    },
+    {
+      "name": "Title-Block Topbar",
+      "kind": "nav",
+      "refersTo": "topbar",
+      "description": "Shared masthead across public site and writer tool: brand left, optional mono meta string + sheet/date stamp right, heavy rule beneath.",
+      "html": "<header class=\"ds-topbar\"><span class=\"ds-topbar-left\"><a class=\"ds-topbar-brand\" href=\"#\">Workbench</a><span class=\"ds-topbar-meta\"><span class=\"ds-topbar-sheet\">#001</span> &middot; Nov 2, 2026</span></span><button class=\"ds-theme-toggle\" aria-label=\"Toggle color theme\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 16 16\" fill=\"none\"><circle cx=\"8\" cy=\"8\" r=\"6.25\" stroke=\"currentColor\" stroke-width=\"1.3\"/><path d=\"M8 1.75a6.25 6.25 0 0 0 0 12.5V1.75Z\" fill=\"currentColor\"/></svg></button></header>",
+      "css": ".ds-topbar { display: flex; justify-content: space-between; align-items: center; padding: 1.7rem 1.5rem 1.2rem; border-bottom: 2px solid #1c1e1a; } .ds-topbar-left { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; } .ds-topbar-brand { font-family: 'Zilla Slab', Georgia, serif; font-weight: 700; font-size: 1.2rem; color: #1c1e1a; text-decoration: none; } .ds-topbar-brand:hover { color: #8a2c21; } .ds-topbar-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: #6b7066; } .ds-topbar-sheet { color: #1c1e1a; font-weight: 600; } .ds-theme-toggle { background: none; border: 1px solid #cfd3c6; color: #1c1e1a; border-radius: 50%; width: 1.9rem; height: 1.9rem; cursor: pointer; } .ds-theme-toggle:hover { border-color: #b23a2c; color: #8a2c21; }"
+    },
+    {
+      "name": "Delete Button",
+      "kind": "button",
+      "refersTo": "w-delete",
+      "description": "Writer-tool destructive action, styled with its warning color at rest (not only on hover) so it reads as destructive from a static glance.",
+      "html": "<button class=\"ds-delete\">Delete</button>",
+      "css": ".ds-delete { background: none; border: 1px solid #8a2c21; color: #8a2c21; padding: 0.3rem 0.7rem; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; } .ds-delete:hover { background: #8a2c21; color: #eef0ea; }"
+    },
+    {
+      "name": "Tag Chip",
+      "kind": "chip",
+      "refersTo": "tag-chip",
+      "description": "Index tag filter chip; borderless at rest, underlines and recolors on hover/active.",
+      "html": "<a class=\"ds-tag-chip ds-tag-chip-active\" href=\"#\">fpga</a>",
+      "css": ".ds-tag-chip { color: #6b7066; padding: 0.15rem 0; border-bottom: 1px solid transparent; font-family: 'JetBrains Mono', monospace; font-size: 11px; text-decoration: none; } .ds-tag-chip:hover, .ds-tag-chip-active { color: #8a2c21; border-bottom-color: #b23a2c; }"
+    },
+    {
+      "name": "Sheet Rail",
+      "kind": "custom",
+      "refersTo": "sheet-rail",
+      "description": "Signature margin device on post pages (>=1320px): vertical mono column restating the sheet number and, at most, one revision tick.",
+      "html": "<span class=\"ds-rail\" aria-hidden=\"true\"><span class=\"ds-rail-sheet\">#001</span><span class=\"ds-rail-revised\">revised Nov 9, 2026</span></span>",
+      "css": ".ds-rail { display: flex; flex-direction: row-reverse; gap: 0.9rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; writing-mode: vertical-rl; text-orientation: mixed; letter-spacing: 0.04em; } .ds-rail-sheet { color: #6b7066; } .ds-rail-revised { color: #8a2c21; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "search-input",
+      "description": "Public-site search field: baseline-only underline, italic placeholder.",
+      "html": "<input class=\"ds-search\" type=\"search\" placeholder=\"Search the notebook…\">",
+      "css": ".ds-search { width: 100%; font-family: 'Spectral', Georgia, serif; font-style: italic; font-size: 1.05rem; padding: 0.4rem 0; background: none; border: none; border-bottom: 1px solid #cfd3c6; color: #1c1e1a; } .ds-search:focus { outline: none; border-bottom-color: #b23a2c; } .ds-search::placeholder { color: #6b7066; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Rev Mark",
+    "overview": "Workbench reads as a single numbered sheet in an ongoing set of engineering drawings, not a magazine feature. Every post carries a sheet number assigned by chronological position (oldest = 1), and the shared masthead is built as a title block — brand on the left, sheet/date/revision stamp on the right, divided from the body by a heavy rule — rather than a conventional nav bar. On wide viewports a vertical margin rail restates the sheet number and, only when the post actually has an `updated` front-matter date, a second accent-colored revision tick beneath it. This is the \"process over results\" positioning made structural rather than asserted in copy: the reader sees, without being told, that this piece was corrected after first publishing.\n\nThe palette was deliberately revised mid-build away from a warm-cream-and-rust first pass — too close to the single most common AI-generated-design cliché — to a cooler, grayer paper tone paired with a genuine \"redline red\" accent. Red was chosen because it is the real-world convention for marking revisions and corrections (red-pen, redline drawings), not as arbitrary decoration; that causal link between subject matter and color choice is a load-bearing decision, not a style preference. Fonts follow the same logic: Zilla Slab, Spectral, and JetBrains Mono were chosen specifically to avoid the Fraunces/Newsreader/Space Grotesk/IBM Plex Mono combination flagged as an overused AI-default pairing.\n\nThe system is flat and content-first: no card grids, no shadows, no rounded corners on content surfaces. Depth and hierarchy come from rules (hairline dividers, heavy 2–3px title-block rules) and from the accent color's restraint, not from elevation.",
+    "keyCharacteristics": [
+      "Title-block masthead (brand + sheet/date stamp, heavy rule beneath) in place of a conventional nav bar.",
+      "A flat \"sheet list\" post index with a leader-dot connector between title and date — never a card grid.",
+      "A margin rail (≥1320px only) restating the sheet number and, at most, one revision tick.",
+      "Redline-red accent reserved for revision marks and active/interactive state — never static decoration.",
+      "One shared token system across the public site and the local writer tool."
+    ],
+    "rules": [
+      { "name": "The Redline Rule", "body": "redline/redline-ink are reserved for actual revision marks and active/interactive state (sidenote markers, .tag-chip.active, hover, :focus-visible, the writer's Delete button) — never for decorating a plain sheet number or other static label. This was enforced as a corrective fix during finish review: an earlier draft colored every sheet number with the accent, diluting it into decoration, and it was corrected to neutral ink specifically because of this rule.", "section": "colors" },
+      { "name": "The Mono-Metadata Rule", "body": "Anything that is data about a post rather than the post's own prose — dates, sheet numbers, tags, byline, reading time, nav labels — is set in JetBrains Mono. Zilla Slab is reserved for headlines and titles; Spectral is reserved for reading prose and deks.", "section": "typography" },
+      { "name": "The Flat Ledger Rule", "body": "Surfaces never lift off the page. A raised panel (sidenote fallback box, writer input/editor panes) is distinguished only by --bg-raised and a hairline border — never a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do set every piece of post metadata (dates, sheet numbers, tags, byline, reading time, nav labels, table cells) in JetBrains Mono.",
+      "Do reserve redline/redline-ink for revision marks and active/interactive state (The Redline Rule).",
+      "Do keep the post index as a flat sheet-list row layout with a dotted leader connector — never a card grid.",
+      "Do style a destructive action (writer Delete) with its warning color at rest, not only on hover.",
+      "Do convey depth with rule weight and background contrast only; no box-shadow."
+    ],
+    "donts": [
+      "Don't color a static label (a plain sheet number, a date with no revision) with the accent — it's reserved for actual revision marks and interaction, per the Redline Rule.",
+      "Don't add rounded corners to content surfaces (buttons, inputs, panels, code blocks); the circular theme toggle is the one established exception, not a precedent for others.",
+      "Don't render an icon as a Unicode/emoji glyph. The theme toggle is an authored inline SVG ({{define \"theme-icon\"}} in templates/partials.html, reused identically on the public site and the writer tool) specifically because an earlier draft's raw \"◐\" character was flagged as a craft-floor violation and replaced.",
+      "Don't expand the margin rail into a multi-revision history log — the data model stores only one optional updated date per post, so the rail holds at most a sheet number and one revision tick, by design."
+    ]
+  }
+}

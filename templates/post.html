@@ -2,13 +2,13 @@
 {{template "header" .}}
 <article class="post">
   <section class="masthead">
-    <p class="kicker">{{if .Post.Tags}}{{index .Post.Tags 0}}{{else}}field note{{end}}</p>
     <h1 class="headline">{{.Post.Title}}</h1>
     {{with .Post.Excerpt}}<p class="dek">{{.}}</p>{{end}}
-    <p class="byline">{{.Post.DateDisplay}} &middot; {{.Post.ReadingMinutes}} min read{{if .Post.Tags}} &middot; {{range $i, $t := .Post.Tags}}{{if $i}}, {{end}}<a href="{{$.Root}}?tag={{$t}}">{{$t}}</a>{{end}}{{end}}</p>
+    <p class="byline">{{.Post.ReadingMinutes}} min read{{if .Post.Tags}} &middot; {{range $i, $t := .Post.Tags}}{{if $i}}, {{end}}<a href="{{$.Root}}?tag={{$t}}">{{$t}}</a>{{end}}{{end}}</p>
     <hr class="title-rule">
   </section>
   <div class="post-body">
+    <span class="rail-left" aria-hidden="true"><span class="rail-sheet">#{{.Post.SheetNo}}</span>{{if .Post.HasUpdate}}<span class="rail-revised">revised {{.Post.UpdatedDisplay}}</span>{{end}}</span>
     {{.Body}}
   </div>
 </article>

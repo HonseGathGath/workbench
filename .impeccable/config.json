@@ -1,0 +1,80 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-11-09T22:50:57.037Z",
+        "reason": "disposable decision-page comp, already resolved, gitignored, never ships"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-11-09T22:50:57.049Z",
+        "reason": "disposable decision-page comp, already resolved, gitignored, never ships"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-11-09T22:50:57.060Z",
+        "reason": "disposable decision-page comp, already resolved, gitignored, never ships"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-11-09T22:50:57.071Z",
+        "reason": "disposable decision-page comp, already resolved, gitignored, never ships"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-11-09T22:50:57.082Z",
+        "reason": "disposable decision-page comp, already resolved, gitignored, never ships"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-11-09T22:50:57.093Z",
+        "reason": "disposable decision-page comp, already resolved, gitignored, never ships"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-11-09T22:50:57.104Z",
+        "reason": "disposable decision-page comp, already resolved, gitignored, never ships"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-crouwel.html"
+        ],
+        "createdAt": "2026-11-09T22:50:57.115Z",
+        "reason": "disposable decision-page comp, already resolved, gitignored, never ships"
+      }
+    ]
+  }
+}

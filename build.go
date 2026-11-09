@@ -13,20 +13,35 @@ import (
 )
 
 type indexData struct {
-	Root      string
-	PageTitle string
-	Posts     []Post
-	Tags      []string
+	Root       string
+	PageTitle  string
+	Posts      []Post
+	Tags       []string
+	TopbarMeta template.HTML // empty on the index: it has no single sheet/date to show
 }
 
 type postData struct {
-	Root      string
-	PageTitle string
-	Post      Post
-	Body      template.HTML
-	Prev      *Post
-	Next      *Post
-	Giscus    giscusConfig
+	Root       string
+	PageTitle  string
+	Post       Post
+	Body       template.HTML
+	Prev       *Post
+	Next       *Post
+	Giscus     giscusConfig
+	TopbarMeta template.HTML
+}
+
+// topbarMeta renders the title-block strip shown in the shared topbar on a
+// post page: sheet number, publish date, and (only when set) the revision
+// mark — the same three fields a drawing's title block carries in its
+// sheet/rev/date corner. All inputs are Go-formatted numbers/dates, never
+// user text, so building this as raw HTML here is safe.
+func topbarMeta(p Post) template.HTML {
+	s := fmt.Sprintf(`<span class="topbar-sheet">#%s</span> &middot; %s`, p.SheetNo(), p.DateDisplay())
+	if p.HasUpdate() {
+		s += fmt.Sprintf(` &middot; <span class="topbar-revised">revised %s</span>`, p.UpdatedDisplay())
+	}
+	return template.HTML(s)
 }
 
 // giscusConfig is read from ./giscus.json, which isn't committed until you
@@ -89,7 +104,7 @@ func Build(outDir string) error {
 		if err != nil {
 			return fmt.Errorf("rendering %s: %w", p.Slug, err)
 		}
-		data := postData{Root: "../../", PageTitle: p.Title, Post: p, Body: body, Giscus: giscus}
+		data := postData{Root: "../../", PageTitle: p.Title, Post: p, Body: body, Giscus: giscus, TopbarMeta: topbarMeta(p)}
 		if i > 0 {
 			data.Next = &posts[i-1]
 		}

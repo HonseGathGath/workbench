@@ -19,12 +19,12 @@
   <article class="entry post-summary" data-slug="{{.Slug}}" data-tags="{{join .Tags ","}}">
     <a class="entry-link" href="{{$.Root}}posts/{{.Slug}}/">
       <span class="entry-row">
-        <span class="entry-index"></span>
+        <span class="entry-sheet">#{{.SheetNo}}</span>
         <span class="entry-title">{{.Title}}</span>
         <span class="entry-leader" aria-hidden="true"></span>
         <span class="entry-date">{{.DateDisplay}}</span>
       </span>
-      <p class="entry-meta">{{.ReadingMinutes}} min{{if .Tags}} &middot; {{range $j, $t := .Tags}}{{if $j}}, {{end}}{{$t}}{{end}}{{end}}</p>
+      <p class="entry-meta">{{.ReadingMinutes}} min{{if .Tags}} &middot; {{range $j, $t := .Tags}}{{if $j}}, {{end}}{{$t}}{{end}}{{end}}{{if .HasUpdate}} &middot; <span class="entry-revised">revised {{.UpdatedDisplay}}</span>{{end}}</p>
       <p class="entry-dek">{{.Excerpt}}</p>
     </a>
   </article>

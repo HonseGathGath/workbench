@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Workbench — Write</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='14' fill='%233f6a5c'/%3E%3Ctext x='50' y='68' font-size='56' font-family='Georgia,serif' font-weight='700' fill='%23f1eae0' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='4' fill='%23b23a2c'/%3E%3Ctext x='50' y='68' font-size='56' font-family='Georgia,serif' font-weight='700' fill='%23eef0ea' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/writer.css">
 <script>
 (function () {
@@ -21,21 +21,22 @@
   <span class="w-brand">Workbench <span class="w-brand-sub">— local writer, not public</span></span>
   <span class="w-topbar-right">
     <a class="w-button" href="/new">+ New post</a>
-    <button id="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">◐</button>
+    <button id="theme-toggle" aria-label="Toggle color theme" title="Toggle color theme">{{template "theme-icon"}}</button>
   </span>
 </header>
 <main class="w-main">
   <table class="w-table">
-    <thead><tr><th>Title</th><th>Date</th><th>Tags</th></tr></thead>
+    <thead><tr><th>Sheet</th><th>Title</th><th>Date</th><th>Tags</th></tr></thead>
     <tbody>
       {{range .Posts}}
       <tr>
-        <td><a href="/edit/{{.Slug}}">{{.Title}}</a></td>
+        <td class="w-sheet">#{{.SheetNo}}</td>
+        <td><a href="/edit/{{.Slug}}">{{.Title}}</a>{{if .HasUpdate}} <span class="w-revised">revised {{.UpdatedDisplay}}</span>{{end}}</td>
         <td class="w-dim">{{.DateDisplay}}</td>
         <td class="w-dim">{{.TagsJoined}}</td>
       </tr>
       {{else}}
-      <tr><td colspan="3" class="w-dim">No posts yet in /posts — <a href="/new">write the first one</a>.</td></tr>
+      <tr><td colspan="4" class="w-dim">No posts yet in /posts — <a href="/new">write the first one</a>.</td></tr>
       {{end}}
     </tbody>
   </table>

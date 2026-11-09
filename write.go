@@ -30,6 +30,7 @@ func RunWriter(port string) {
 	mux.HandleFunc("GET /new", writerNew)
 	mux.HandleFunc("GET /edit/{slug}", writerEdit)
 	mux.HandleFunc("POST /api/save", writerSave)
+	mux.HandleFunc("POST /api/delete", writerDelete)
 	mux.Handle("GET /assets/", http.StripPrefix("/assets/", http.FileServer(http.FS(writerStaticFS))))
 
 	addr := "127.0.0.1:" + port
@@ -76,11 +77,12 @@ func writerEdit(w http.ResponseWriter, r *http.Request) {
 }
 
 type saveRequest struct {
-	Slug  string `json:"slug"`
-	Title string `json:"title"`
-	Tags  string `json:"tags"`
-	Date  string `json:"date"`
-	Body  string `json:"body"`
+	Slug    string `json:"slug"`
+	Title   string `json:"title"`
+	Tags    string `json:"tags"`
+	Date    string `json:"date"`
+	Updated string `json:"updated"`
+	Body    string `json:"body"`
 }
 
 func writerSave(w http.ResponseWriter, r *http.Request) {
@@ -109,6 +111,15 @@ func writerSave(w http.ResponseWriter, r *http.Request) {
 		date = time.Now()
 	}
 
+	var updated time.Time
+	if req.Updated != "" {
+		updated, err = time.Parse("2006-01-02", req.Updated)
+		if err != nil {
+			http.Error(w, "bad updated date", http.StatusBadRequest)
+			return
+		}
+	}
+
 	// slugify() runs on a client-supplied slug too, not just a generated
 	// one — otherwise a crafted slug like "../../whatever" would pass
 	// straight through to WritePostFile's filepath.Join and write outside
@@ -122,11 +133,68 @@ func writerSave(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := WritePostFile(postsDir, slug, req.Title, date, parseTags(req.Tags), req.Body); err != nil {
+	if err := WritePostFile(postsDir, slug, req.Title, date, updated, parseTags(req.Tags), req.Body); err != nil {
 		http.Error(w, "could not save: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"slug": slug})
+}
+
+type deleteRequest struct {
+	Slug string `json:"slug"`
+}
+
+// writerDelete removes a post file. Same permission model as every other
+// writer route: no auth, because only this machine can ever reach it. The
+// same two guards as writerSave apply for the same reasons — a strict
+// Content-Type check (CSRF via a same-browser page can't set it without
+// triggering a CORS preflight) and running the slug through slugify()
+// before it ever reaches a filesystem path, so a crafted slug can't escape
+// postsDir. On top of that, delete only ever acts on a slug LoadPosts
+// already enumerated as a real, existing post — never on a bare filename a
+// request invents.
+func writerDelete(w http.ResponseWriter, r *http.Request) {
+	if ct := r.Header.Get("Content-Type"); !strings.HasPrefix(ct, "application/json") {
+		http.Error(w, "expected application/json", http.StatusUnsupportedMediaType)
+		return
+	}
+
+	var req deleteRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	slug := slugify(req.Slug)
+	if slug == "" {
+		http.Error(w, "slug required", http.StatusBadRequest)
+		return
+	}
+
+	posts, err := LoadPosts(postsDir)
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	found := false
+	for _, p := range posts {
+		if p.Slug == slug {
+			found = true
+			break
+		}
+	}
+	if !found {
+		http.NotFound(w, r)
+		return
+	}
+
+	if err := DeletePostFile(postsDir, slug); err != nil {
+		http.Error(w, "could not delete: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]bool{"deleted": true})
 }

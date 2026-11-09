@@ -74,6 +74,33 @@
         ],
         "createdAt": "2026-11-09T22:50:57.115Z",
         "reason": "disposable decision-page comp, already resolved, gitignored, never ships"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-11-09T23:05:30.581Z",
+        "reason": "disposable decision-page comp for an unchosen direction, gitignored, never ships, intentionally off-system"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-crouwel.html"
+        ],
+        "createdAt": "2026-11-09T23:05:30.593Z",
+        "reason": "disposable decision-page comp for an unchosen direction, gitignored, never ships, intentionally off-system"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-11-09T23:05:30.605Z",
+        "reason": "disposable decision-page comp (category-standard card), gitignored, never ships, intentionally off-system"
       }
     ]
   }

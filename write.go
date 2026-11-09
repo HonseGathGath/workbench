@@ -36,7 +36,32 @@ func RunWriter(port string) {
 	addr := "127.0.0.1:" + port
 	url := "http://" + addr
 	log.Printf("Workbench writer running at %s (only reachable from this machine)", url)
-	log.Fatal(http.ListenAndServe(addr, mux))
+	log.Fatal(http.ListenAndServe(addr, requireLocalHost(port, mux)))
+}
+
+// requireLocalHost rejects any request whose Host header isn't exactly
+// 127.0.0.1:<port> or localhost:<port>. Binding to 127.0.0.1 keeps other
+// machines out, but it doesn't stop DNS rebinding: a page open in the same
+// browser, served from an attacker-controlled domain, can have that
+// domain's DNS record repointed at 127.0.0.1 after the page loads. The
+// browser then treats requests from that page as same-origin — no CORS
+// preflight, no Content-Type restriction — while they actually land on
+// this server. The Host header the browser sends still names the
+// attacker's domain, not this one, because DNS rebinding changes where a
+// hostname resolves, not what hostname the browser believes it's talking
+// to, so checking Host here closes exactly that gap.
+func requireLocalHost(port string, next http.Handler) http.Handler {
+	allowed := map[string]bool{
+		"127.0.0.1:" + port: true,
+		"localhost:" + port: true,
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !allowed[r.Host] {
+			http.Error(w, "forbidden host", http.StatusForbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func renderWriter(w http.ResponseWriter, name string, data any) {
